@@ -1,0 +1,7 @@
+{
+  "cars": {"label":"Cars / JDM","default_duration":35,"keywords":["supra","jdm","turbo","dyno","engine","build","boost","exhaust","race"]},
+  "construction": {"label":"Construction","default_duration":35,"keywords":["construction","fence","build","repair","before","after","tool","concrete","welding"]},
+  "podcasts": {"label":"Podcasts","default_duration":45,"keywords":["story","crazy","mistake","lesson","truth","question","money","business"]},
+  "sports": {"label":"Sports","default_duration":30,"keywords":["dunk","goal","touchdown","knockout","game","play","highlight","comeback"]},
+  "interesting": {"label":"Interesting / Engineering","default_duration":40,"keywords":["engineering","invention","how","experiment","discovery","machine","technology","unusual"]}
+}
