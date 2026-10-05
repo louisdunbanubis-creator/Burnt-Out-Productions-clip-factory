@@ -1,0 +1,96 @@
+name: Clip Factory - Render
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_url:
+        description: "URL to an authorized/licensed source"
+        required: true
+        type: string
+      rights_confirmed:
+        description: "Confirm you have the right to process/reuse this source"
+        required: true
+        type: boolean
+        default: false
+      start:
+        description: "Start time, e.g. 00:01:20"
+        required: true
+        type: string
+        default: "00:00:00"
+      duration:
+        description: "Clip length in seconds"
+        required: true
+        type: number
+        default: 35
+      niche:
+        description: "Content niche"
+        required: true
+        type: choice
+        options:
+          - cars
+          - construction
+          - podcasts
+          - sports
+          - interesting
+        default: cars
+      hook:
+        description: "Optional hook text"
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check rights confirmation
+        if: ${{ inputs.rights_confirmed != true }}
+        run: |
+          echo "::error::Rights confirmation is required."
+          exit 1
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install FFmpeg and yt-dlp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python3 -m pip install --upgrade yt-dlp
+
+      - name: Download authorized source
+        env:
+          SOURCE_URL: ${{ inputs.source_url }}
+        run: |
+          mkdir -p work
+          yt-dlp --no-playlist --restrict-filenames -f "bv*+ba/b" --merge-output-format mp4 -o "work/source.%(ext)s" "$SOURCE_URL"
+
+      - name: Locate downloaded media
+        id: media
+        run: |
+          FILE="$(find work -maxdepth 1 -type f | head -n 1)"
+          test -n "$FILE"
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Render vertical clip
+        env:
+          SOURCE_FILE: ${{ steps.media.outputs.file }}
+          SOURCE_URL: ${{ inputs.source_url }}
+          RIGHTS_CONFIRMED: ${{ inputs.rights_confirmed }}
+          START: ${{ inputs.start }}
+          DURATION: ${{ inputs.duration }}
+          NICHE: ${{ inputs.niche }}
+          HOOK: ${{ inputs.hook }}
+        run: |
+          python3 scripts/render.py
+          mkdir -p output
+          mv clip.mp4 "output/${NICHE}_clip.mp4"
+          mv metadata.json output/metadata.json
+
+      - name: Upload clip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: clip-factory-${{ inputs.niche }}
+          path: output/
+          retention-days: 3
