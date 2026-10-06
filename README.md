@@ -23,7 +23,7 @@ The project remains multi-niche: cars/JDM, construction, podcasts, sports, and i
 
 The production text treatment uses **Anton**, an open-license condensed display font, as the consistent substitute for the Redthaproducer closing-credit look. It is used for hooks and burned-in captions so the machine has one recognizable text identity. The exact original closing-credit typeface can be swapped in later without changing the renderer.
 
-Anton is distributed under the SIL Open Font License. urlAnton source and license metadatahttps://github.com/google/fonts/blob/main/ofl/anton/METADATA.pb
+Anton is distributed under the SIL Open Font License. [Anton source and license metadata](https://github.com/google/fonts/blob/main/ofl/anton/METADATA.pb)
 
 ## Rights gate
 
@@ -33,6 +33,6 @@ A source being publicly viewable does not automatically grant reuse rights.
 
 ## Free-cloud architecture
 
-Heavy work runs in GitHub Actions; the iPhone is the control and review device. Public repositories can use standard GitHub-hosted runners without runner-minute charges. urlGitHub Actions billing documentationhttps://docs.github.com/en/actions/concepts/billing-and-usage
+Heavy work runs in GitHub Actions; the iPhone is the control and review device. Public repositories can use standard GitHub-hosted runners without runner-minute charges. [GitHub Actions billing documentation](https://docs.github.com/en/actions/concepts/billing-and-usage)
 
-The dashboard is designed to deploy as a static Cloudflare Pages site, so the phone UI does not require a paid server. Cloudflare's Git integration can automatically redeploy the site whenever this repository changes. urlCloudflare Pages Git integrationhttps://developers.cloudflare.com/pages/configuration/git-integration/
+The dashboard is designed to deploy as a static Cloudflare Pages site, so the phone UI does not require a paid server. Cloudflare's Git integration can automatically redeploy the site whenever this repository changes. [Cloudflare Pages Git integration](https://developers.cloudflare.com/pages/configuration/git-integration/)
