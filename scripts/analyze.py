@@ -45,7 +45,7 @@ for sc,i,st,en,text in ranked:
     if any(not (end <= a or start >= b) for _,a,b,_,_ in candidates):
         continue
     candidates.append((sc,start,end,text))
-    if len(candidates)>=MAX_CLIPS: break
+    if len(candidates)>=min(MAX_CLIPS,max(1,TARGET//10)): break
 
 candidates.sort(key=lambda x:x[1])
 total=sum(b-a for _,a,b,_ in candidates)
