@@ -1,4 +1,4 @@
-name: Clip Factory - Render
+name: Clip Factory - AI Best Moments
 
 on:
   workflow_dispatch:
@@ -8,56 +8,54 @@ on:
         required: true
         type: string
       rights_confirmed:
-        description: "Confirm you have the right to process/reuse this source"
+        description: "I own/have permission/license or lawful rights to reuse this footage"
         required: true
         type: boolean
         default: false
-      start:
-        description: "Start time, e.g. 00:01:20"
-        required: true
-        type: string
-        default: "00:00:00"
-      duration:
-        description: "Clip length in seconds"
-        required: true
-        type: number
-        default: 35
       niche:
-        description: "Content niche"
+        description: "Niche used to score the best moments"
         required: true
         type: choice
-        options:
-          - cars
-          - construction
-          - podcasts
-          - sports
-          - interesting
+        options: [cars, construction, podcasts, sports, interesting]
         default: cars
+      max_clips:
+        description: "Number of best moments to stitch together"
+        required: true
+        type: number
+        default: 5
+      target_duration:
+        description: "Target total seconds for the finished montage"
+        required: true
+        type: number
+        default: 45
       hook:
-        description: "Optional hook text"
+        description: "Optional headline in the RedthaProducer-style brand font"
         required: false
         type: string
         default: ""
 
 jobs:
-  render:
+  analyze-and-render:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
-      - name: Check rights confirmation
+      - name: Rights gate
         if: ${{ inputs.rights_confirmed != true }}
         run: |
           echo "::error::Rights confirmation is required."
           exit 1
 
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install FFmpeg and yt-dlp
+      - name: Install media tools, Whisper and brand font
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
-          python3 -m pip install --upgrade yt-dlp
+          sudo apt-get install -y ffmpeg fonts-dejavu
+          sudo mkdir -p /usr/share/fonts/truetype/anton
+          sudo curl -L --fail --retry 3 -o /usr/share/fonts/truetype/anton/Anton-Regular.ttf https://raw.githubusercontent.com/google/fonts/main/ofl/anton/Anton-Regular.ttf
+          sudo fc-cache -f
+          python3 -m pip install --upgrade pip
+          python3 -m pip install --no-cache-dir openai-whisper yt-dlp
 
       - name: Download authorized source
         env:
@@ -66,31 +64,51 @@ jobs:
           mkdir -p work
           yt-dlp --no-playlist --restrict-filenames -f "bv*+ba/b" --merge-output-format mp4 -o "work/source.%(ext)s" "$SOURCE_URL"
 
-      - name: Locate downloaded media
+      - name: Locate source and measure full video
         id: media
         run: |
           FILE="$(find work -maxdepth 1 -type f | head -n 1)"
           test -n "$FILE"
+          DUR="$(ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$FILE")"
           echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          echo "duration=$DUR" >> "$GITHUB_OUTPUT"
 
-      - name: Render vertical clip
+      - name: Extract full-video audio
+        env:
+          SOURCE_FILE: ${{ steps.media.outputs.file }}
+        run: |
+          ffmpeg -y -i "$SOURCE_FILE" -vn -ac 1 -ar 16000 -c:a pcm_s16le work/audio.wav
+
+      - name: Transcribe the entire video
+        run: |
+          whisper work/audio.wav --model base --language en --output_format json --output_dir work
+
+      - name: Score the entire transcript and select best moments
+        env:
+          TRANSCRIPT_JSON: work/audio.json
+          SOURCE_DURATION: ${{ steps.media.outputs.duration }}
+          NICHE: ${{ inputs.niche }}
+          MAX_CLIPS: ${{ inputs.max_clips }}
+          TARGET_DURATION: ${{ inputs.target_duration }}
+        run: |
+          python3 scripts/analyze.py
+
+      - name: Render and stitch selected moments
         env:
           SOURCE_FILE: ${{ steps.media.outputs.file }}
           SOURCE_URL: ${{ inputs.source_url }}
           RIGHTS_CONFIRMED: ${{ inputs.rights_confirmed }}
-          START: ${{ inputs.start }}
-          DURATION: ${{ inputs.duration }}
           NICHE: ${{ inputs.niche }}
           HOOK: ${{ inputs.hook }}
+          ANALYSIS_FILE: work/analysis.json
+          TRANSCRIPT_JSON: work/audio.json
+          OUTPUT_FILE: output/best_moments_${{ inputs.niche }}.mp4
         run: |
           python3 scripts/render.py
-          mkdir -p output
-          mv clip.mp4 "output/${NICHE}_clip.mp4"
-          mv metadata.json output/metadata.json
 
-      - name: Upload clip artifact
+      - name: Upload finished clips
         uses: actions/upload-artifact@v4
         with:
-          name: clip-factory-${{ inputs.niche }}
+          name: clip-factory-${{ inputs.niche }}-best-moments
           path: output/
           retention-days: 3
