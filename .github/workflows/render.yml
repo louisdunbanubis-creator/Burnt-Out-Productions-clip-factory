@@ -62,7 +62,7 @@ jobs:
           sudo fc-cache -f
           python3 -m venv .venv
           .venv/bin/pip install --upgrade pip
-          .venv/bin/pip install --no-cache-dir openai-whisper yt-dlp
+          .venv/bin/pip install --no-cache-dir openai-whisper yt-dlp mcp
 
       - name: Install free Piper voice engine when requested
         if: ${{ inputs.narration_mode == 'replace' || inputs.narration_mode == 'mix' }}
@@ -132,6 +132,13 @@ jobs:
           SOURCE_URL: ${{ inputs.source_url }}
         run: |
           python3 scripts/vidiq_research.py
+
+      - name: Research clip keywords with official vidIQ MCP
+        env:
+          VIDIQ_MCP_API_KEY: ${{ secrets.VIDIQ_MCP_API_KEY }}
+          VIDIQ_QUEUE_JSON: output/vidiq-research-queue.json
+        run: |
+          .venv/bin/python scripts/vidiq_mcp_research.py
 
       - name: Upload finished clips, scripts and analysis
         uses: actions/upload-artifact@v4
