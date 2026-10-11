@@ -125,6 +125,14 @@ jobs:
         run: |
           python3 scripts/render.py
 
+      - name: Prepare per-clip vidIQ keyword research queue
+        env:
+          ANALYSIS_FILE: work/analysis.json
+          NICHE: ${{ inputs.niche }}
+          SOURCE_URL: ${{ inputs.source_url }}
+        run: |
+          python3 scripts/vidiq_research.py
+
       - name: Upload finished clips, scripts and analysis
         uses: actions/upload-artifact@v4
         with:
