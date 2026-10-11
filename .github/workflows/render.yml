@@ -77,7 +77,7 @@ jobs:
           SOURCE_URL: ${{ inputs.source_url }}
         run: |
           mkdir -p work
-          yt-dlp --no-playlist --restrict-filenames -f "bv*+ba/b" --merge-output-format mp4 -o "work/source.%(ext)s" "$SOURCE_URL"
+          .venv/bin/yt-dlp --no-playlist --restrict-filenames -f "bv*+ba/b" --merge-output-format mp4 -o "work/source.%(ext)s" "$SOURCE_URL"
 
       - name: Locate source and measure full video
         id: media
