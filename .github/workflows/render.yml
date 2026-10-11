@@ -19,7 +19,7 @@ on:
         options: [cars, construction, podcasts, sports, interesting]
         default: cars
       max_clips:
-        description: "Number of best moments to stitch together"
+        description: "Number of best moments to produce"
         required: true
         type: number
         default: 5
@@ -29,10 +29,16 @@ on:
         type: number
         default: 45
       hook:
-        description: "Optional headline in the RedthaProducer-style brand font"
+        description: "Optional custom headline; otherwise a hook is generated for each clip"
         required: false
         type: string
         default: ""
+      narration_mode:
+        description: "Original audio, generated voiceover, or mix"
+        required: true
+        type: choice
+        options: [original, replace, mix]
+        default: original
 
 jobs:
   analyze-and-render:
@@ -40,7 +46,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Rights gate
-        if: ${{ inputs.rights_confirmed != true }}
+        if: \${{ inputs.rights_confirmed != true }}
         run: |
           echo "::error::Rights confirmation is required."
           exit 1
@@ -57,9 +63,17 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install --no-cache-dir openai-whisper yt-dlp
 
+      - name: Install free Piper voice engine when requested
+        if: \${{ inputs.narration_mode == 'replace' || inputs.narration_mode == 'mix' }}
+        run: |
+          python3 -m pip install --no-cache-dir piper-tts
+          mkdir -p work
+          curl -L --fail --retry 3 -o work/en_US-lessac-medium.onnx https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx
+          curl -L --fail --retry 3 -o work/en_US-lessac-medium.onnx.json https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json
+
       - name: Download authorized source
         env:
-          SOURCE_URL: ${{ inputs.source_url }}
+          SOURCE_URL: \${{ inputs.source_url }}
         run: |
           mkdir -p work
           yt-dlp --no-playlist --restrict-filenames -f "bv*+ba/b" --merge-output-format mp4 -o "work/source.%(ext)s" "$SOURCE_URL"
@@ -67,7 +81,7 @@ jobs:
       - name: Locate source and measure full video
         id: media
         run: |
-          FILE="$(find work -maxdepth 1 -type f | head -n 1)"
+          FILE="$(find work -maxdepth 1 -type f \( -name 'source.*' \) | head -n 1)"
           test -n "$FILE"
           DUR="$(ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$FILE")"
           echo "file=$FILE" >> "$GITHUB_OUTPUT"
@@ -75,7 +89,7 @@ jobs:
 
       - name: Extract full-video audio
         env:
-          SOURCE_FILE: ${{ steps.media.outputs.file }}
+          SOURCE_FILE: \${{ steps.media.outputs.file }}
         run: |
           ffmpeg -y -i "$SOURCE_FILE" -vn -ac 1 -ar 16000 -c:a pcm_s16le work/audio.wav
 
@@ -83,32 +97,35 @@ jobs:
         run: |
           whisper work/audio.wav --model base --language en --output_format json --output_dir work
 
-      - name: Score the entire transcript and select best moments
+      - name: Score moments and write clip scripts
         env:
           TRANSCRIPT_JSON: work/audio.json
-          SOURCE_DURATION: ${{ steps.media.outputs.duration }}
-          NICHE: ${{ inputs.niche }}
-          MAX_CLIPS: ${{ inputs.max_clips }}
-          TARGET_DURATION: ${{ inputs.target_duration }}
+          SOURCE_DURATION: \${{ steps.media.outputs.duration }}
+          NICHE: \${{ inputs.niche }}
+          MAX_CLIPS: \${{ inputs.max_clips }}
+          TARGET_DURATION: \${{ inputs.target_duration }}
+          GEMINI_API_KEY: \${{ secrets.GEMINI_API_KEY }}
         run: |
           python3 scripts/analyze.py
 
-      - name: Render and stitch selected moments
+      - name: Render individual clips and stitched montage
         env:
-          SOURCE_FILE: ${{ steps.media.outputs.file }}
-          SOURCE_URL: ${{ inputs.source_url }}
-          RIGHTS_CONFIRMED: ${{ inputs.rights_confirmed }}
-          NICHE: ${{ inputs.niche }}
-          HOOK: ${{ inputs.hook }}
+          SOURCE_FILE: \${{ steps.media.outputs.file }}
+          SOURCE_URL: \${{ inputs.source_url }}
+          RIGHTS_CONFIRMED: \${{ inputs.rights_confirmed }}
+          NICHE: \${{ inputs.niche }}
+          HOOK: \${{ inputs.hook }}
+          NARRATION_MODE: \${{ inputs.narration_mode }}
+          PIPER_MODEL: work/en_US-lessac-medium.onnx
           ANALYSIS_FILE: work/analysis.json
           TRANSCRIPT_JSON: work/audio.json
-          OUTPUT_FILE: output/best_moments_${{ inputs.niche }}.mp4
+          OUTPUT_FILE: output/best_moments_\${{ inputs.niche }}.mp4
         run: |
           python3 scripts/render.py
 
-      - name: Upload finished clips
+      - name: Upload finished clips, scripts and analysis
         uses: actions/upload-artifact@v4
         with:
-          name: clip-factory-${{ inputs.niche }}-best-moments
+          name: clip-factory-\${{ inputs.niche }}-best-moments
           path: output/
           retention-days: 3
