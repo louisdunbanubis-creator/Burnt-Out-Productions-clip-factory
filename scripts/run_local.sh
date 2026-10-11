@@ -26,6 +26,13 @@ if [[ ! -f "$SOURCE_FILE" ]]; then
 fi
 SOURCE_FILE="$(cd "$(dirname "$SOURCE_FILE")" && pwd)/$(basename "$SOURCE_FILE")"
 
+printf "Do you own or have permission/lawful rights to reuse this video? Type yes to continue: "
+read -r RIGHTS_CONFIRMATION
+if [[ "$RIGHTS_CONFIRMATION" != "yes" ]]; then
+  echo "Stopped. Only process footage you have rights to reuse."
+  exit 1
+fi
+
 if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
   echo "FFmpeg is required. On a Mac with Homebrew, run: brew install ffmpeg"
   exit 1
@@ -100,7 +107,7 @@ TARGET_DURATION="$TARGET_DURATION" GEMINI_API_KEY="${GEMINI_API_KEY:-}" \
 .venv/bin/python scripts/analyze.py
 
 echo "Rendering clips..."
-SOURCE_FILE="$SOURCE_FILE" SOURCE_URL="local-file:$SOURCE_FILE" RIGHTS_CONFIRMED="user-confirmed-local-rights" \
+SOURCE_FILE="$SOURCE_FILE" SOURCE_URL="local-file:$SOURCE_FILE" RIGHTS_CONFIRMED="$RIGHTS_CONFIRMATION" \
 NICHE="$NICHE" HOOK="$HOOK" NARRATION_MODE="$NARRATION_MODE" PIPER_MODEL="$PIPER_MODEL" \
 FONT_FILE="$FONT_FILE" PATH="$ROOT/.venv/bin:$PATH" \
 ANALYSIS_FILE="$ROOT/work/analysis.json" TRANSCRIPT_JSON="$ROOT/work/audio.json" \
