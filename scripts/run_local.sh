@@ -114,6 +114,11 @@ ANALYSIS_FILE="$ROOT/work/analysis.json" TRANSCRIPT_JSON="$ROOT/work/audio.json"
 OUTPUT_FILE="$ROOT/output/best_moments_$NICHE.mp4" \
 .venv/bin/python scripts/render.py
 
+echo "Preparing vidIQ keyword research queue..."
+ANALYSIS_FILE="$ROOT/work/analysis.json" OUTPUT_DIR="$ROOT/output" NICHE="$NICHE" \
+SOURCE_URL="local-file:$SOURCE_FILE" \
+.venv/bin/python scripts/vidiq_research.py
+
 echo
 echo "Finished. Your files are in:"
 open "$ROOT/output" 2>/dev/null || true
