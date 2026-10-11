@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/wrangler@latest/config-schema.json",
+  "name": "burnt-out-clip-factory",
+  "compatibility_date": "2026-10-10",
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "404"
+  }
+}
