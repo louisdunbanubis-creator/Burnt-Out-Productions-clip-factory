@@ -13,7 +13,22 @@ A free-first, iPhone-controlled video clipping pipeline. Heavy work runs in GitH
 7. Converts each moment to vertical 9:16, adds burned-in captions and a headline.
 8. Saves every clip separately and stitches them into one montage.
 9. Optionally creates Piper text-to-speech narration and either replaces the original audio or mixes narration over quieter source audio.
-10. Uploads MP4s, scripts, analysis, and metadata as a downloadable GitHub Actions artifact (available for 3 days).
+10. Generates a per-clip vidIQ keyword research queue with candidate search phrases, draft titles, descriptions, and relevant tag suggestions.
+11. Uploads MP4s, scripts, analysis, metadata, and the vidIQ research queue as a downloadable GitHub Actions artifact (available for 3 days).
+
+## vidIQ keyword research (new)
+
+Every cloud clip run creates `vidiq-research-queue.csv` and `vidiq-research-queue.json` inside the output artifact.
+
+1. Open the finished GitHub Actions run and download its artifact.
+2. Open the CSV in a spreadsheet, or use the JSON version.
+3. For each clip, open [vidIQ Keyword Research](https://app.vidiq.com/) and search the suggested candidate phrases.
+4. Compare vidIQ's displayed search-volume estimate, competition, and overall keyword score when available.
+5. Choose a phrase that accurately matches the clip, favoring strong demand with lower competition. Do not use unrelated keywords just because their volume is high.
+6. Fill in the blank metric/date fields in the research queue, then revise the draft title, description, and tags.
+7. Have a human review the final metadata before publishing.
+
+The workflow deliberately leaves vidIQ metrics blank until they are checked. It does not fabricate search volume or competition data. Candidate phrases are suggestions generated from the clip transcript and selected niche; they are not a substitute for vidIQ's live research. For the same keyword selection principles, see [docs/vidiq-keyword-research.md](docs/vidiq-keyword-research.md).
 
 ## Run it from iPhone
 
@@ -22,6 +37,7 @@ A free-first, iPhone-controlled video clipping pipeline. Heavy work runs in GitH
 3. Paste a source URL and confirm your reuse rights.
 4. Choose a niche, clip count, target montage duration, and narration mode.
 5. Start the run. Open the completed run and download the artifact.
+6. Open the vidIQ research queue in the artifact and complete the keyword check before publishing.
 
 Choose original to keep the source audio. Choose replace to use generated narration instead, or mix to layer narration over the original audio. Piper TTS is open-source and the voice model is downloaded only when needed.
 
@@ -34,6 +50,7 @@ To enable Gemini refinement, create a Gemini API key using its available free ti
 - Moment selection is transcript/keyword based. It is an automated first pass, not a guarantee of virality or a full visual understanding model.
 - The generated script is based on what is actually said in the selected moment; it does not invent a new factual story.
 - B-roll search phrases are included in scripts/metadata, but the current workflow does not yet fetch or insert B-roll footage automatically.
+- vidIQ keyword candidates are generated automatically, but actual search-volume/competition verification remains a vidIQ research step; publishing is not automated from these metrics.
 - Music is not automatically added yet. Use only music you own or are licensed to use.
 - The default mode keeps original audio and does not generate voiceover. Choose replace or mix when you want Piper narration.
 - Anton is the current open-license condensed display font substitute; it is not the exact RedthaProducer typeface.
@@ -45,7 +62,6 @@ The workflow uses GitHub Actions, Whisper, FFmpeg, and optional Piper TTS. GitHu
 ## Rights gate
 
 Only process footage you own, have permission/license to use, public-domain material, applicable Creative Commons material, or footage you are using in a lawful transformative/commentary workflow. A source being publicly viewable does not automatically grant reuse rights.
-
 
 ## Process a video saved on your Mac (no URL needed)
 
