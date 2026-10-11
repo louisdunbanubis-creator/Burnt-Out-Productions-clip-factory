@@ -30,6 +30,28 @@ Every cloud clip run creates `vidiq-research-queue.csv` and `vidiq-research-queu
 
 The workflow deliberately leaves vidIQ metrics blank until they are checked. It does not fabricate search volume or competition data. Candidate phrases are suggestions generated from the clip transcript and selected niche; they are not a substitute for vidIQ's live research. For the same keyword selection principles, see [docs/vidiq-keyword-research.md](docs/vidiq-keyword-research.md).
 
+## iPhone dashboard → GitHub Actions
+
+The Cloudflare Worker dashboard can submit the workflow settings directly to GitHub Actions through `src/worker.js`. It never exposes the GitHub token in browser code.
+
+### One-time connection setup
+
+1. Create a **fine-grained GitHub personal access token** restricted to this repository only, with **Actions: Read and write** permission. Do not paste the token into the webpage or commit it to this repository.
+2. In the Cloudflare dashboard, open the Worker named `burnt-out-productions-clip-factory`, then Settings → Variables and Secrets.
+3. Add `GITHUB_TOKEN` as an encrypted secret containing that GitHub token.
+4. Add `DASHBOARD_PIN` as an encrypted secret containing a private PIN/password you choose. The dashboard asks for this PIN when submitting each job.
+5. Deploy the updated Worker using the repository's existing Cloudflare deployment setup. Then open the dashboard and submit a small test job.
+
+The form only reports success after GitHub accepts the workflow-dispatch request. If it reports that the connection is not configured, add the two Worker secrets above and redeploy. If GitHub returns a permissions error, verify the token's Actions write permission and that it is limited to the correct repository.
+
+### Source inputs
+
+- **YouTube link:** uses the existing yt-dlp downloader; YouTube may still block some downloads.
+- **Direct MP4 file URL:** use an HTTPS URL that downloads the actual video file, not a webpage with a Download button. The workflow currently caps this download at about 1.8 GB.
+- A video saved only on your iPhone cannot be sent directly by this URL field. Direct device upload needs a separate upload/storage service; GitHub Actions manual inputs do not accept binary file attachments.
+
+The rights checkbox must be confirmed in the dashboard. The Worker sends that confirmation into the workflow, which still has its own rights gate.
+
 ## Run it from iPhone
 
 1. Open the Cloudflare dashboard and tap OPEN CLIP MAKER.
