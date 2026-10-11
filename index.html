@@ -1,77 +1,130 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#090909"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Burnt Out Productions"><link rel="manifest" href="/manifest.json"><link rel="apple-touch-icon" href="/icon.svg">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#4C1222">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Burnt Out Productions">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon.svg">
 <title>Burnt Out Productions — Clip Factory</title>
 <style>
 @font-face{font-family:"Redtha Producer";src:url("public/fonts/RedthaProducer-Regular.ttf") format("truetype");font-display:swap}
 :root{color-scheme:dark;--bg:#090909;--card:#151515;--line:#292929;--text:#fff;--muted:#aaa;--accent:#A12D45;--accent-deep:#4C1222;--accent-bright:#C45A72}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#292929 0,#090909 45%);color:var(--text);font-family:system-ui,sans-serif;min-height:100vh}
-main{max-width:720px;margin:auto;padding:24px 16px 48px}.brand{font-family:"Redtha Producer",sans-serif;text-transform:uppercase;letter-spacing:.01em;font-size:clamp(40px,8vw,64px);line-height:.9;color:var(--accent-bright);text-shadow:3px 4px 0 var(--accent-deep),0 10px 22px #0008}.sub{color:var(--muted);margin:10px 0 24px;line-height:1.45}
-.card{background:rgba(21,21,21,.96);border:1px solid var(--line);border-radius:20px;padding:19px;margin:14px 0;box-shadow:0 12px 35px #0008}
-h2{font-size:19px;margin:0 0 14px}label{display:block;font-size:13px;color:#ddd;margin:14px 0 7px}input,select,textarea{width:100%;background:#090909;border:1px solid #383838;border-radius:12px;color:#fff;padding:14px;font:inherit;font-size:16px}textarea{min-height:78px;resize:vertical}input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.button{display:block;width:100%;border:0;text-decoration:none;text-align:center;border-radius:14px;padding:16px 18px;margin:10px 0;font-family:"Redtha Producer",sans-serif;text-transform:uppercase;letter-spacing:.02em;font-size:26px;background:#222;color:#fff;cursor:pointer}.button.primary{background:var(--accent);color:#fff}.button:disabled{opacity:.55;cursor:wait}.small{font-size:13px;color:var(--muted);line-height:1.5}.check{display:flex;align-items:flex-start;gap:11px;padding:13px;border:1px solid #383838;border-radius:12px;margin-top:15px}.check input{width:20px;height:20px;flex:0 0 20px;margin:1px 0 0;accent-color:var(--accent)}.check label{margin:0;font-size:13px;line-height:1.45}.notice{display:none;padding:13px;border-radius:12px;margin-top:12px;line-height:1.45;font-size:14px;overflow-wrap:anywhere}.notice.show{display:block}.notice.error{background:#351414;border:1px solid #7a2929}.notice.success{background:#122b1b;border:1px solid #28653e}.notice a{color:#fff}.footer{text-align:center;margin-top:20px}.eyebrow{color:var(--accent-bright);font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
-@media(max-width:420px){.grid{grid-template-columns:1fr}.card{padding:16px}}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% -10%,#292929 0,#090909 45%);color:var(--text);font-family:system-ui,sans-serif;min-height:100vh}
+main{max-width:720px;margin:auto;padding:24px 18px 50px}
+.brand{font-family:"Redtha Producer",sans-serif;text-transform:uppercase;letter-spacing:.01em;font-size:clamp(40px,11vw,58px);line-height:.88;color:var(--accent-bright);text-shadow:3px 4px 0 var(--accent-deep),0 10px 22px #0008}
+.brand .kicker{display:block;color:var(--accent);font-size:.62em;text-shadow:2px 3px 0 var(--accent-deep)}
+.sub{color:var(--muted);margin:10px 0 22px;line-height:1.45}
+.card{background:rgba(21,21,21,.94);border:1px solid var(--line);border-radius:22px;padding:20px;margin:14px 0;box-shadow:0 12px 35px #0008}
+.button{display:block;width:100%;border:0;text-decoration:none;text-align:center;border-radius:16px;padding:16px 14px;margin:10px 0;font-family:"Redtha Producer",sans-serif;text-transform:uppercase;letter-spacing:.01em;font-size:22px;line-height:1.05;background:#222;color:#fff;cursor:pointer}
+.button.primary{background:var(--accent);color:#fff;text-shadow:2px 2px 0 var(--accent-deep)}
+.button:disabled{opacity:.55;cursor:wait}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pill{border:1px solid var(--line);border-radius:14px;padding:14px;color:#ddd;display:block}
+.pill.wide{grid-column:1 / -1}
+.pill b{display:block;font-family:"Redtha Producer",sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:.02em;font-size:22px;line-height:1;color:var(--accent-bright);text-shadow:2px 2px 0 var(--accent-deep);margin-bottom:8px}
+.pill input,.pill select{width:100%;background:#090909;border:1px solid #383838;border-radius:10px;color:#fff;padding:12px;font:inherit;font-size:16px}
+.pill input:focus,.pill select:focus{outline:2px solid var(--accent);outline-offset:1px}
+#hook{font-family:"Redtha Producer",sans-serif;color:var(--accent-bright);font-size:20px}
+.card-title{font-family:"Redtha Producer",sans-serif;font-weight:400;text-transform:uppercase;font-size:28px;line-height:.95;color:var(--accent-bright);text-shadow:2px 3px 0 var(--accent-deep);margin:0 0 8px}
+.small{font-size:13px;color:var(--muted);line-height:1.45}
+.check{display:flex;align-items:flex-start;gap:11px;margin-top:12px}
+.check input{width:20px;height:20px;flex:0 0 20px;margin:1px 0 0;accent-color:var(--accent)}
+.check label{margin:0;font-size:13px;line-height:1.45;color:#ddd}
+.notice{display:none;padding:13px;border-radius:12px;margin-top:12px;line-height:1.45;font-size:14px;overflow-wrap:anywhere}
+.notice.show{display:block}
+.notice.error{background:#351414;border:1px solid #7a2929}
+.notice.success{background:#122b1b;border:1px solid #28653e}
+.notice a{color:#fff}
+progress{width:100%;margin-top:8px;accent-color:var(--accent)}
 </style>
 </head>
-<body><main>
-<div class="brand">Burnt Out Productions<br><span style="color:#E7B7C4">Clip Factory</span></div>
-<div class="sub">Your iPhone control center. Paste a source link, choose your settings, confirm your rights, and send the job straight to GitHub Actions.</div>
+<body>
+<main>
+<div class="brand"><span class="kicker">Burnt Out Productions</span>Clip Factory</div>
+<div class="sub">iPhone control center • full-video analysis • best-moment stitching</div>
 <form id="runForm">
-  <section class="card">
-    <div class="eyebrow">01 / Video source</div>
-    <h2>What are we clipping?</h2>
-    <label for="source_type">Source type</label>
-    <select id="source_type" name="source_type"><option value="direct_mp4">Upload an MP4 from my phone</option><option value="youtube">YouTube link</option></select>
-    <div id="fileArea" style="margin-top:12px;padding:12px;border:1px dashed #555;border-radius:12px"><label for="video_file">Choose MP4 video</label><input id="video_file" type="file" accept="video/mp4,.mp4" style="width:100%;padding:10px;background:#090909;color:white;border:1px solid #444;border-radius:10px"><p class="small">Upload directly from your iPhone. Up to 1.8 GB. Keep this page open while uploading.</p></div>
-    <label for="source_url">Paste video link</label>
-    <input id="source_url" name="source_url" type="url" placeholder="https://…/video.mp4" autocomplete="url">
-    <p class="small" id="sourceHelp">Paste the YouTube video URL. The workflow will attempt to fetch it.</p>
-    <div class="check"><input id="rights_confirmed" name="rights_confirmed" type="checkbox" required><label for="rights_confirmed">I own this video, have permission or a license to use it, or otherwise have lawful rights to process and reuse this footage.</label></div>
-  </section>
-  <section class="card">
-    <div class="eyebrow">02 / Clip settings</div>
-    <h2>Shape the output</h2>
-    <label for="niche">Content niche</label>
-    <select id="niche" name="niche"><option value="cars">Cars</option><option value="construction">Construction</option><option value="podcasts">Podcasts</option><option value="sports">Sports</option><option value="interesting">Interesting / other</option></select>
-    <div class="grid">
-      <div><label for="max_clips">Number of clips (1–10)</label><input id="max_clips" name="max_clips" type="number" min="1" max="10" value="5" required></div>
-      <div><label for="target_duration">Montage length in seconds (15–180)</label><input id="target_duration" name="target_duration" type="number" min="15" max="180" step="1" value="45" required></div>
-    </div>
-    <label for="hook">Custom headline (optional)</label>
-    <input id="hook" name="hook" type="text" maxlength="180" placeholder="Leave blank to generate hooks">
-    <label for="narration_mode">Audio / narration</label>
-    <select id="narration_mode" name="narration_mode"><option value="original">Keep original audio</option><option value="replace">Replace with generated narration</option><option value="mix">Mix narration with original audio</option></select>
-  </section>
-  <section class="card">
-    <div class="eyebrow">03 / Secure connection</div>
-    <h2>Send job to GitHub</h2>
-    <label for="pin">Dashboard access PIN</label>
-    <input id="pin" name="pin" type="password" autocomplete="current-password" placeholder="Enter your private dashboard PIN" required>
-    <p class="small">The PIN and GitHub token are handled by the server connection. Your GitHub token is never placed in this webpage.</p>
-    <button id="submitBtn" class="button primary" type="submit">⚡ SEND TO CLIP FACTORY</button>
-    <progress id="progress" max="100" value="0" style="display:none;width:100%;margin-top:12px;accent-color:var(--accent)"></progress><div id="notice" class="notice" role="status" aria-live="polite"></div>
-  </section>
+<section class="card">
+  <button class="button primary" id="submitBtn" type="submit">Send to GitHub</button>
+  <a class="button" href="https://github.com/louisdunbanubis-creator/Burnt-Out-Productions-clip-factory/actions" target="_blank" rel="noopener">View jobs / download clips</a>
+  <progress id="progress" max="100" value="0" hidden></progress>
+  <div id="notice" class="notice" role="status" aria-live="polite"></div>
+</section>
+<section class="card">
+  <div class="grid">
+    <label class="pill"><b>Source</b>
+      <select id="source_type" name="source_type">
+        <option value="youtube">YouTube link</option>
+        <option value="direct_mp4">Direct MP4</option>
+      </select>
+    </label>
+    <label class="pill"><b>Niche</b>
+      <select id="niche" name="niche">
+        <option value="cars">Cars</option>
+        <option value="construction">Construction</option>
+        <option value="podcasts">Podcasts</option>
+        <option value="sports">Sports</option>
+        <option value="interesting">Interesting</option>
+      </select>
+    </label>
+    <label class="pill"><b>Clips</b>
+      <input id="max_clips" name="max_clips" type="number" min="1" max="10" value="5" required>
+    </label>
+    <label class="pill"><b>Seconds</b>
+      <input id="target_duration" name="target_duration" type="number" min="15" max="180" step="1" value="45" required>
+    </label>
+    <label class="pill"><b>Narration</b>
+      <select id="narration_mode" name="narration_mode">
+        <option value="original">Original audio</option>
+        <option value="replace">Generated voice</option>
+        <option value="mix">Mix both</option>
+      </select>
+    </label>
+    <label class="pill"><b>PIN</b>
+      <input id="pin" name="pin" type="password" autocomplete="current-password" placeholder="Dashboard PIN" required>
+    </label>
+    <label class="pill wide"><b>Video link</b>
+      <input id="source_url" name="source_url" type="url" inputmode="url" placeholder="https://www.youtube.com/watch?v=… or https://…/video.mp4" autocomplete="off">
+    </label>
+    <label class="pill wide" id="fileArea" hidden><b>MP4 from this phone</b>
+      <input id="video_file" type="file" accept="video/mp4,.mp4">
+    </label>
+    <label class="pill wide"><b>Headline</b>
+      <input id="hook" name="hook" type="text" maxlength="180" placeholder="Leave blank to generate hooks">
+    </label>
+  </div>
+  <div class="check"><input id="rights_confirmed" name="rights_confirmed" type="checkbox" required><label for="rights_confirmed">I own this video, have permission or a license to use it, or otherwise have lawful rights to process and reuse this footage.</label></div>
+</section>
 </form>
 <section class="card">
-  <h2>Track your job</h2>
-  <p class="small">After GitHub accepts your request, open the workflow page to see progress and download the finished clips, montage, scripts, and keyword research files.</p>
-  <a class="button" href="https://github.com/louisdunbanubis-creator/Burnt-Out-Productions-clip-factory/actions" target="_blank" rel="noopener">VIEW JOBS / DOWNLOAD CLIPS</a>
-  <a class="button" href="https://app.vidiq.com/" target="_blank" rel="noopener">OPEN vidIQ KEYWORD RESEARCH</a>
+  <h2 class="card-title">Brand style</h2>
+  <p class="small">Titles, buttons, and on-video captions use Redtha Producer in burgundy.</p>
 </section>
-<div class="small footer">Only process videos you own or are authorized to use. Choose an MP4 from your phone or paste a direct HTTPS MP4 URL. Video uploads use private Cloudflare storage.</div>
+<section class="card">
+  <h2 class="card-title">Rights-first</h2>
+  <p class="small">The machine will stop unless you confirm you own, licensed, have permission for, or otherwise lawfully may reuse the source. Public availability alone is not treated as permission.</p>
+</section>
 </main>
 <script>
-const form=document.getElementById("runForm"),type=document.getElementById("source_type"),fileInput=document.getElementById("video_file"),sourceInput=document.getElementById("source_url"),help=document.getElementById("sourceHelp"),btn=document.getElementById("submitBtn"),notice=document.getElementById("notice"),progress=document.getElementById("progress");
+const form=document.getElementById("runForm"),type=document.getElementById("source_type"),fileInput=document.getElementById("video_file"),sourceInput=document.getElementById("source_url"),btn=document.getElementById("submitBtn"),notice=document.getElementById("notice"),progress=document.getElementById("progress"),fileArea=document.getElementById("fileArea");
 let uploadedKey="",uploadedUrl="";
 function say(message,kind=""){notice.className="notice show "+kind;notice.textContent=message;}
-function updateMode(){const youtube=type.value==="youtube";document.getElementById("fileArea").style.display=youtube?"none":"block";sourceInput.placeholder=youtube?"https://www.youtube.com/watch?v=…":"https://example.com/video.mp4";sourceInput.required=youtube||!fileInput.files.length;help.textContent=youtube?"Paste the YouTube link. YouTube may still block some downloads.":"Choose an MP4 above, or paste a direct HTTPS link to the MP4 file itself.";}
+function youtubeLink(value){try{const host=new URL(value).hostname.replace(/^www\./,"");return host==="youtu.be"||host==="youtube.com"||host.endsWith(".youtube.com")||host==="m.youtube.com";}catch{return false}}
+function updateMode(){const fileMode=type.value==="direct_mp4";fileArea.hidden=!fileMode;sourceInput.required=type.value==="youtube"||!fileInput.files.length;sourceInput.placeholder=type.value==="youtube"?"https://www.youtube.com/watch?v=…":"https://…/video.mp4";}
 type.addEventListener("change",updateMode);
-fileInput.addEventListener("change",()=>{uploadedKey="";uploadedUrl="";if(fileInput.files[0]){const f=fileInput.files[0];if(f.size>1800000000){fileInput.value="";say("That video is over the 1.8 GB limit. Choose a smaller MP4.","error");}else if(!/\.mp4$/i.test(f.name)&&f.type!=="video/mp4"){fileInput.value="";say("Please choose an MP4 video file.","error");}else{sourceInput.value="";say("Ready to upload "+f.name+" ("+(f.size/1048576).toFixed(1)+" MB).","success");}}updateMode();});
-async function uploadVideo(file,pin){const chunkSize=8*1024*1024,total=Math.ceil(file.size/chunkSize),id=crypto.randomUUID(),token=Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,"0")).join("");progress.style.display="block";progress.value=0;say("Preparing secure upload…");
-for(let part=0;part<total;part++){const start=part*chunkSize,end=Math.min(file.size,start+chunkSize);let res;try{res=await fetch("/api/upload/chunk?id="+encodeURIComponent(id)+"&part="+part+"&total="+total,{method:"PUT",headers:{"x-dashboard-pin":pin,"Content-Type":"application/octet-stream"},body:file.slice(start,end)});}catch(e){throw new Error("Upload connection interrupted at chunk "+(part+1)+". Keep the page open and try again.");}const d=await res.json().catch(()=>({error:"Unexpected upload response."}));if(!res.ok||!d.ok)throw new Error(d.error||"Upload failed at chunk "+(part+1)+".");progress.value=Math.round((part+1)/total*92);say("Uploading video… "+Math.round((part+1)/total*100)+"% ("+(end/1048576).toFixed(0)+" / "+(file.size/1048576).toFixed(0)+" MB)");}
-say("Finishing secure video upload…");const res=await fetch("/api/upload/finish",{method:"POST",headers:{"Content-Type":"application/json","x-dashboard-pin":pin},body:JSON.stringify({id,token,total,size:file.size,filename:file.name})});const d=await res.json().catch(()=>({error:"Could not finish the upload."}));if(!res.ok||!d.ok)throw new Error(d.error||"Could not finish the upload.");progress.value=100;uploadedKey=file.name+":"+file.size;uploadedUrl=d.source_url;sourceInput.value=d.source_url;return d.source_url;}
-form.addEventListener("submit",async e=>{e.preventDefault();notice.className="notice";notice.textContent="";updateMode();if(!form.reportValidity())return;const pin=document.getElementById("pin").value.trim(),file=fileInput.files[0];btn.disabled=true;btn.textContent="WORKING…";
-try{let source=sourceInput.value.trim();if(type.value==="direct_mp4"&&file){const key=file.name+":"+file.size;source=uploadedKey===key&&uploadedUrl?uploadedUrl:await uploadVideo(file,pin);}if(!source)throw new Error("Choose an MP4 file or paste a video URL.");say("Sending your job to GitHub Actions…");const payload={source_type:type.value,source_url:source,rights_confirmed:document.getElementById("rights_confirmed").checked,niche:document.getElementById("niche").value,max_clips:Number(document.getElementById("max_clips").value),target_duration:Number(document.getElementById("target_duration").value),hook:document.getElementById("hook").value.trim(),narration_mode:document.getElementById("narration_mode").value};const res=await fetch("/api/run",{method:"POST",headers:{"Content-Type":"application/json","x-dashboard-pin":pin},body:JSON.stringify(payload)});const d=await res.json().catch(()=>({error:"Unexpected dashboard response."}));if(!res.ok||!d.ok)throw new Error(d.error||"GitHub could not start the workflow.");notice.className="notice success show";notice.innerHTML="✓ "+d.message+"<br><br><a href=\""+d.actions_url+"\" target=\"_blank\" rel=\"noopener\">Open job tracker →</a>";progress.value=100;fileInput.value="";sourceInput.value="";uploadedKey="";uploadedUrl="";document.getElementById("rights_confirmed").checked=false;updateMode();}catch(err){say(err.message||"Something went wrong. Check the connection and try again.","error");}finally{btn.disabled=false;btn.textContent="⚡ SEND TO CLIP FACTORY";}});
+sourceInput.addEventListener("input",()=>{if(youtubeLink(sourceInput.value.trim()))type.value="youtube";updateMode();});
+fileInput.addEventListener("change",()=>{uploadedKey="";uploadedUrl="";if(fileInput.files[0]){const f=fileInput.files[0];if(f.size>1800000000){fileInput.value="";say("That video is over the 1.8 GB limit. Choose a smaller MP4.","error");}else if(!/\.mp4$/i.test(f.name)&&f.type!=="video/mp4"){fileInput.value="";say("Please choose an MP4 video file.","error");}else{type.value="direct_mp4";sourceInput.value="";say("Ready to upload "+f.name+" ("+(f.size/1048576).toFixed(1)+" MB).","success");}}updateMode();});
+async function uploadVideo(file,pin){const chunkSize=8*1024*1024,total=Math.ceil(file.size/chunkSize),id=crypto.randomUUID(),token=Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,"0")).join("");progress.hidden=false;progress.value=0;say("Preparing secure upload…");
+for(let part=0;part<total;part++){const start=part*chunkSize,end=Math.min(file.size,start+chunkSize);let res;try{res=await fetch("/api/upload/chunk?id="+encodeURIComponent(id)+"&part="+part+"&total="+total,{method:"PUT",headers:{"x-dashboard-pin":pin,"Content-Type":"application/octet-stream"},body:file.slice(start,end)});}catch(e){throw new Error("Upload connection interrupted at chunk "+(part+1)+". Keep the page open and try again.");}const d=await res.json().catch(()=>({error:"Unexpected upload response."}));if(!res.ok||!d.ok)throw new Error(d.error||"Upload failed at chunk "+(part+1)+".");progress.value=Math.round((part+1)/total*92);say("Uploading video… "+Math.round((part+1)/total*100)+"%");}
+say("Finishing secure video upload…");const res=await fetch("/api/upload/finish",{method:"POST",headers:{"Content-Type":"application/json","x-dashboard-pin":pin},body:JSON.stringify({id,token,total,size:file.size,filename:file.name})});const d=await res.json().catch(()=>({error:"Could not finish the upload."}));if(!res.ok||!d.ok)throw new Error(d.error||"Could not finish the upload.");progress.value=100;uploadedKey=file.name+":"+file.size;uploadedUrl=d.source_url;return d.source_url;}
+form.addEventListener("submit",async e=>{e.preventDefault();notice.className="notice";notice.textContent="";if(youtubeLink(sourceInput.value.trim()))type.value="youtube";updateMode();if(!form.reportValidity())return;const pin=document.getElementById("pin").value.trim(),file=fileInput.files[0];btn.disabled=true;btn.textContent="Sending";
+try{let source=sourceInput.value.trim();if(type.value==="direct_mp4"&&file){const key=file.name+":"+file.size;source=uploadedKey===key&&uploadedUrl?uploadedUrl:await uploadVideo(file,pin);}if(!source)throw new Error("Paste a video link or choose an MP4.");say("Sending this job to GitHub…");const payload={source_type:type.value,source_url:source,rights_confirmed:document.getElementById("rights_confirmed").checked,niche:document.getElementById("niche").value,max_clips:Number(document.getElementById("max_clips").value),target_duration:Number(document.getElementById("target_duration").value),hook:document.getElementById("hook").value.trim(),narration_mode:document.getElementById("narration_mode").value};const res=await fetch("/api/run",{method:"POST",headers:{"Content-Type":"application/json","x-dashboard-pin":pin},body:JSON.stringify(payload)});const d=await res.json().catch(()=>({error:"Unexpected dashboard response."}));if(!res.ok||!d.ok)throw new Error(d.error||"GitHub could not start the workflow.");notice.className="notice success show";notice.innerHTML="GitHub accepted the job.<br><br><a href=\""+d.actions_url+"\" target=\"_blank\" rel=\"noopener\">Open the job →</a>";progress.value=100;fileInput.value="";sourceInput.value="";uploadedKey="";uploadedUrl="";document.getElementById("rights_confirmed").checked=false;updateMode();}catch(err){say(err.message||"Something went wrong. Check the connection and try again.","error");}finally{btn.disabled=false;btn.textContent="Send to GitHub";}});
 updateMode();
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));}
-</script></body></html>
+</script>
+</body>
+</html>
