@@ -57,7 +57,7 @@ for idx, moment in enumerate(ANALYSIS.get("moments", []), 1):
     if hook:
         safe=hook.replace("\\","\\\\").replace(":","\\:").replace("'","\\'").replace("%","\\%").replace(",","\\,")
         vf += f",drawtext=fontfile={FONT}:text='{safe}':x=(w-text_w)/2:y=110:fontsize=72:fontcolor=white:borderw=5:bordercolor=black:box=1:boxcolor=black@0.35:boxborderw=18"
-    base=["ffmpeg","-y","-ss",str(start),"-i",SOURCE,"-t",str(duration)]
+    base=["ffmpeg","-y","-ss",str(start),"-i",SOURCE]
     if NARRATION_MODE in ("replace","mix"):
         voice=make_voiceover(moment,idx)
         base += ["-i",voice]
@@ -68,7 +68,7 @@ for idx, moment in enumerate(ANALYSIS.get("moments", []), 1):
         base += ["-filter_complex", audio_filter + f";[0:v]{vf}[v]", "-map","[v]","-map","[a]"]
     else:
         base += ["-vf",vf,"-map","0:v:0","-map","0:a?"]
-    base += ["-c:v","libx264","-preset","veryfast","-crf","21","-c:a","aac","-b:a","160k","-movflags","+faststart",out]
+    base += ["-t",str(duration),"-c:v","libx264","-preset","veryfast","-crf","21","-c:a","aac","-b:a","160k","-movflags","+faststart",out]
     run(base)
     clips.append(out)
 
