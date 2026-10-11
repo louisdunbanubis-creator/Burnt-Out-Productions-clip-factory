@@ -30,6 +30,41 @@ Every cloud clip run creates `vidiq-research-queue.csv` and `vidiq-research-queu
 
 The workflow deliberately leaves vidIQ metrics blank until they are checked. It does not fabricate search volume or competition data. Candidate phrases are suggestions generated from the clip transcript and selected niche; they are not a substitute for vidIQ's live research. For the same keyword selection principles, see [docs/vidiq-keyword-research.md](docs/vidiq-keyword-research.md).
 
+## One-tap dashboard and iPhone MP4 upload
+
+Dashboard: https://burnt-out-productions-clip-factory.louisdunbanubis.workers.dev/
+
+The mobile dashboard now supports selecting an MP4 stored on your iPhone, chunked upload to a **private Cloudflare R2 bucket**, and submitting the finished upload plus your clipping settings to GitHub Actions. The video link uses a random access token; the bucket itself is not public. The dashboard also supports a direct MP4 URL or a YouTube link.
+
+### One-time Cloudflare setup (required)
+
+1. In Cloudflare, open **R2 Object Storage** and create a bucket named exactly `clip-factory-videos`.
+2. Open **Workers & Pages** and select `burnt-out-productions-clip-factory`. Under **Settings → Bindings**, add an **R2 bucket** binding with variable name `VIDEO_BUCKET` and bucket `clip-factory-videos`. (The repository's `wrangler.jsonc` also declares this binding.)
+3. Under **Settings → Variables and Secrets**, add these as encrypted secrets:
+   - `GITHUB_TOKEN`: a fine-grained GitHub token restricted to this repository, with **Actions: Read and write** permission.
+   - `DASHBOARD_PIN`: a private password/PIN of your choice. This is what you type into the dashboard before each upload/job.
+4. Deploy the Worker using the repository's `wrangler.jsonc` configuration so the new `src/worker.js`, R2 binding, and `public/` dashboard are active. You can deploy from the connected Cloudflare Git integration or enable the optional GitHub deployment workflow below.
+
+### Optional automatic deployment from GitHub
+
+To let every future dashboard/Worker change deploy automatically, add these repository Actions secrets under **Settings → Secrets and variables → Actions**:
+
+- `CLOUDFLARE_API_TOKEN`: a Cloudflare API token allowed to edit/deploy Workers for this account.
+- `CLOUDFLARE_ACCOUNT_ID`: the Cloudflare account ID.
+
+The workflow `.github/workflows/deploy-cloudflare.yml` skips deployment safely until both secrets exist.
+
+### Storage housekeeping
+
+Uploads are private and the download URL contains a random access token. In R2, add lifecycle rules to delete objects with prefix `tmp/` after 1 day and prefix `videos/` after 7 days, so interrupted uploads and completed source videos do not accumulate forever. Completed clip output is still stored as a GitHub Actions artifact; open the **Jobs / Downloads** link on the dashboard.
+
+### Use it
+
+1. Open the dashboard in iPhone Safari and optionally choose **Share → Add to Home Screen**.
+2. Choose **Upload an MP4 from my phone**, select the video, set the niche and clip options, enter your dashboard PIN, confirm your rights, then tap **Start Making Clips**.
+3. Keep the page open while the upload progress bar runs. After the dashboard says GitHub accepted the job, open **View My Jobs / Download Clips** to track it.
+4. If uploading is not configured yet, the dashboard will explain which R2 binding or secret is missing.
+
 ## iPhone dashboard → GitHub Actions
 
 The Cloudflare Worker dashboard can submit the workflow settings directly to GitHub Actions through `src/worker.js`. It never exposes the GitHub token in browser code.
