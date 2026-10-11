@@ -3,8 +3,14 @@ name: Clip Factory - AI Best Moments
 on:
   workflow_dispatch:
     inputs:
+      source_type:
+        description: "Where the video comes from"
+        required: true
+        type: choice
+        options: [youtube, direct_mp4]
+        default: youtube
       source_url:
-        description: "URL to an authorized/licensed source"
+        description: "YouTube link or direct MP4 file URL (not a webpage)"
         required: true
         type: string
       rights_confirmed:
@@ -80,9 +86,33 @@ jobs:
       - name: Download authorized source
         env:
           SOURCE_URL: ${{ inputs.source_url }}
+          SOURCE_TYPE: ${{ inputs.source_type }}
         run: |
+          set -euo pipefail
           mkdir -p work
-          .venv/bin/yt-dlp --js-runtimes deno --force-ipv4 --extractor-args "youtube:player_client=tv,web_safari" --no-playlist --restrict-filenames -f "bv*+ba/b" --merge-output-format mp4 -o "work/source.%(ext)s" "$SOURCE_URL"
+          case "$SOURCE_TYPE" in
+            direct_mp4)
+              python3 - <<'PY'
+          import os, urllib.parse, sys
+          u = urllib.parse.urlparse(os.environ["SOURCE_URL"])
+          if u.scheme != "https" or not u.netloc:
+              print("Direct MP4 source must be an HTTPS URL.", file=sys.stderr)
+              sys.exit(1)
+          PY
+              curl --location --fail --show-error --retry 3 --max-time 1800 --max-filesize 1800000000 "$SOURCE_URL" -o work/source.mp4
+              if ! ffprobe -v error -select_streams v:0 -show_entries stream=codec_type -of csv=p=0 work/source.mp4 | grep -q video; then
+                echo "::error::The supplied URL did not return a readable video file."
+                exit 1
+              fi
+              ;;
+            youtube)
+              .venv/bin/yt-dlp --js-runtimes deno --force-ipv4 --extractor-args "youtube:player_client=tv,web_safari" --no-playlist --restrict-filenames -f "bv*+ba/b" --merge-output-format mp4 -o "work/source.%(ext)s" "$SOURCE_URL"
+              ;;
+            *)
+              echo "::error::Unsupported source type."
+              exit 1
+              ;;
+          esac
 
       - name: Locate source and measure full video
         id: media
