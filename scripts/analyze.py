@@ -31,10 +31,12 @@ for i, seg in enumerate(segments):
         ranked.append((score(seg), i, start, end, seg.get("text", "").strip()))
 ranked.sort(reverse=True)
 candidates = []
-wanted = min(MAX_CLIPS, max(1, TARGET // 8))
+wanted = min(MAX_CLIPS, max(1, round(TARGET / 10)))
+clip_length = max(6, min(15, TARGET / wanted))
 for sc, idx, start, end, text in ranked:
     center = (start + end) / 2
-    a, b = max(0, center - 6), min(SOURCE_DURATION, center + 7)
+    half = clip_length / 2
+    a, b = max(0, center - half), min(SOURCE_DURATION, center + half)
     if b - a < 6: continue
     a, b = round(a, 2), round(b, 2)
     if any(not (b <= old_a or a >= old_b) for _, old_a, old_b, _ in candidates): continue
