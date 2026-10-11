@@ -7,27 +7,68 @@
 @font-face{font-family:Anton;src:url("https://raw.githubusercontent.com/google/fonts/main/ofl/anton/Anton-Regular.ttf")}
 :root{color-scheme:dark;--bg:#090909;--card:#151515;--line:#292929;--text:#fff;--muted:#aaa;--accent:#e11}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#292929 0,#090909 45%);color:var(--text);font-family:system-ui,sans-serif;min-height:100vh}
-main{max-width:720px;margin:auto;padding:24px 18px 50px}.brand{font-family:Anton,sans-serif;text-transform:uppercase;letter-spacing:.035em;font-size:clamp(34px,7vw,52px);line-height:.94;text-shadow:0 2px 0 #e11,0 8px 22px #0008}.sub{color:var(--muted);margin:8px 0 28px}
-.card{background:rgba(21,21,21,.94);border:1px solid var(--line);border-radius:22px;padding:20px;margin:14px 0;box-shadow:0 12px 35px #0008}
-.button{display:block;text-decoration:none;text-align:center;border-radius:16px;padding:17px 18px;margin:10px 0;font-family:Anton,sans-serif;text-transform:uppercase;letter-spacing:.04em;font-size:22px;background:#fff;color:#000}.button.primary{background:#e11;color:#fff}.button.secondary{background:#222;color:#fff}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pill{border:1px solid var(--line);border-radius:14px;padding:14px;color:#ddd}.small{font-size:13px;color:var(--muted);line-height:1.45}
+main{max-width:720px;margin:auto;padding:24px 16px 48px}.brand{font-family:Anton,sans-serif;text-transform:uppercase;letter-spacing:.035em;font-size:clamp(34px,7vw,52px);line-height:.94;text-shadow:0 2px 0 #e11,0 8px 22px #0008}.sub{color:var(--muted);margin:10px 0 24px;line-height:1.45}
+.card{background:rgba(21,21,21,.96);border:1px solid var(--line);border-radius:20px;padding:19px;margin:14px 0;box-shadow:0 12px 35px #0008}
+h2{font-size:19px;margin:0 0 14px}label{display:block;font-size:13px;color:#ddd;margin:14px 0 7px}input,select,textarea{width:100%;background:#090909;border:1px solid #383838;border-radius:12px;color:#fff;padding:14px;font:inherit;font-size:16px}textarea{min-height:78px;resize:vertical}input:focus,select:focus,textarea:focus{outline:2px solid #e11;outline-offset:1px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.button{display:block;width:100%;border:0;text-decoration:none;text-align:center;border-radius:14px;padding:16px 18px;margin:10px 0;font-family:Anton,sans-serif;text-transform:uppercase;letter-spacing:.04em;font-size:21px;background:#222;color:#fff;cursor:pointer}.button.primary{background:#e11;color:#fff}.button:disabled{opacity:.55;cursor:wait}.small{font-size:13px;color:var(--muted);line-height:1.5}.check{display:flex;align-items:flex-start;gap:11px;padding:13px;border:1px solid #383838;border-radius:12px;margin-top:15px}.check input{width:20px;height:20px;flex:0 0 20px;margin:1px 0 0;accent-color:#e11}.check label{margin:0;font-size:13px;line-height:1.45}.notice{display:none;padding:13px;border-radius:12px;margin-top:12px;line-height:1.45;font-size:14px;overflow-wrap:anywhere}.notice.show{display:block}.notice.error{background:#351414;border:1px solid #7a2929}.notice.success{background:#122b1b;border:1px solid #28653e}.notice a{color:#fff}.footer{text-align:center;margin-top:20px}.eyebrow{color:#f55;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+@media(max-width:420px){.grid{grid-template-columns:1fr}.card{padding:16px}}
 </style>
 </head>
 <body><main>
 <div class="brand">Burnt Out Productions<br><span style="color:#e11">Clip Factory</span></div>
-<div class="sub">iPhone control center • auto-picked moments • hooks, scripts, captions & optional voiceover</div>
-<div class="card">
-<a class="button primary" href="https://github.com/louisdunbanubis-creator/Burnt-Out-Productions-clip-factory/actions/workflows/render.yml" target="_blank">⚡ OPEN CLIP MAKER</a>
-<a class="button secondary" href="https://github.com/louisdunbanubis-creator/Burnt-Out-Productions-clip-factory/actions" target="_blank">VIEW JOBS / DOWNLOAD CLIPS</a>
-</div>
-<div class="card"><div class="grid">
-<div class="pill"><b>1.</b> Paste authorized source</div>
-<div class="pill"><b>2.</b> Pick niche</div>
-<div class="pill"><b>3.</b> Analyze entire video</div>
-<div class="pill"><b>4.</b> Generate hooks and scripts</div>
-<div class="pill"><b>5.</b> Export individual clips + montage</div>
-<div class="pill"><b>6.</b> Optional free Piper narration</div>
-</div></div>
-<div class="card"><b>Brand style</b><p class="small">The Burnt Out Productions Clip Factory identity uses a bold, condensed Redthaproducer-inspired display treatment. Anton is the current open-license stand-in; the exact original typeface can be substituted when its font file is available.</p></div>
-<div class="card"><b>Rights-first</b><p class="small">The machine will stop unless you confirm you own, licensed, have permission for, or otherwise lawfully may reuse the source. Public availability alone is not treated as permission.</p></div>
-<div class="small" style="text-align:center;margin-top:24px">Tip: open this dashboard in Safari, tap Share, then Add to Home Screen for an app-like iPhone shortcut.</div>\n</main><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));}</script></body></html>
+<div class="sub">Your iPhone control center. Paste a source link, choose your settings, confirm your rights, and send the job straight to GitHub Actions.</div>
+<form id="runForm">
+  <section class="card">
+    <div class="eyebrow">01 / Video source</div>
+    <h2>What are we clipping?</h2>
+    <label for="source_type">Source type</label>
+    <select id="source_type" name="source_type"><option value="youtube">YouTube link</option><option value="direct_mp4">Direct MP4 file URL</option></select>
+    <label for="source_url">Paste video link</label>
+    <input id="source_url" name="source_url" type="url" placeholder="https://…" autocomplete="url" required>
+    <p class="small" id="sourceHelp">Paste the YouTube video URL. The workflow will attempt to fetch it.</p>
+    <div class="check"><input id="rights_confirmed" name="rights_confirmed" type="checkbox" required><label for="rights_confirmed">I own this video, have permission or a license to use it, or otherwise have lawful rights to process and reuse this footage.</label></div>
+  </section>
+  <section class="card">
+    <div class="eyebrow">02 / Clip settings</div>
+    <h2>Shape the output</h2>
+    <label for="niche">Content niche</label>
+    <select id="niche" name="niche"><option value="cars">Cars</option><option value="construction">Construction</option><option value="podcasts">Podcasts</option><option value="sports">Sports</option><option value="interesting">Interesting / other</option></select>
+    <div class="grid">
+      <div><label for="max_clips">Number of clips (1–10)</label><input id="max_clips" name="max_clips" type="number" min="1" max="10" value="5" required></div>
+      <div><label for="target_duration">Montage length in seconds (15–180)</label><input id="target_duration" name="target_duration" type="number" min="15" max="180" step="1" value="45" required></div>
+    </div>
+    <label for="hook">Custom headline (optional)</label>
+    <input id="hook" name="hook" type="text" maxlength="180" placeholder="Leave blank to generate hooks">
+    <label for="narration_mode">Audio / narration</label>
+    <select id="narration_mode" name="narration_mode"><option value="original">Keep original audio</option><option value="replace">Replace with generated narration</option><option value="mix">Mix narration with original audio</option></select>
+  </section>
+  <section class="card">
+    <div class="eyebrow">03 / Secure connection</div>
+    <h2>Send job to GitHub</h2>
+    <label for="pin">Dashboard access PIN</label>
+    <input id="pin" name="pin" type="password" autocomplete="current-password" placeholder="Enter your private dashboard PIN" required>
+    <p class="small">The PIN and GitHub token are handled by the server connection. Your GitHub token is never placed in this webpage.</p>
+    <button id="submitBtn" class="button primary" type="submit">⚡ SEND TO CLIP FACTORY</button>
+    <div id="notice" class="notice" role="status" aria-live="polite"></div>
+  </section>
+</form>
+<section class="card">
+  <h2>Track your job</h2>
+  <p class="small">After GitHub accepts your request, open the workflow page to see progress and download the finished clips, montage, scripts, and keyword research files.</p>
+  <a class="button" href="https://github.com/louisdunbanubis-creator/Burnt-Out-Productions-clip-factory/actions" target="_blank" rel="noopener">VIEW JOBS / DOWNLOAD CLIPS</a>
+  <a class="button" href="https://app.vidiq.com/" target="_blank" rel="noopener">OPEN vidIQ KEYWORD RESEARCH</a>
+</section>
+<div class="small footer">Only process videos you own or are authorized to use. Large direct MP4 files must be available from a downloadable HTTPS link; this form does not upload a file stored only on your phone.</div>
+</main>
+<script>
+const form=document.getElementById("runForm"),type=document.getElementById("source_type"),help=document.getElementById("sourceHelp"),btn=document.getElementById("submitBtn"),notice=document.getElementById("notice");
+type.addEventListener("change",()=>{help.textContent=type.value==="direct_mp4"?"Paste a direct HTTPS link to the MP4 file itself, not a webpage that has a Download button.":"Paste the YouTube video URL. The workflow will attempt to fetch it.";document.getElementById("source_url").placeholder=type.value==="direct_mp4"?"https://example.com/video.mp4":"https://www.youtube.com/watch?v=…";});
+form.addEventListener("submit",async e=>{e.preventDefault();notice.className="notice";notice.textContent="";if(!form.reportValidity())return;
+const payload={source_type:type.value,source_url:document.getElementById("source_url").value.trim(),rights_confirmed:document.getElementById("rights_confirmed").checked,niche:document.getElementById("niche").value,max_clips:Number(document.getElementById("max_clips").value),target_duration:Number(document.getElementById("target_duration").value),hook:document.getElementById("hook").value.trim(),narration_mode:document.getElementById("narration_mode").value,pin:document.getElementById("pin").value};
+btn.disabled=true;btn.textContent="SENDING TO GITHUB…";
+try{const res=await fetch("/api/run",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});const data=await res.json().catch(()=>({error:"Unexpected response from dashboard server."}));if(!res.ok||!data.ok){throw new Error(data.error||"GitHub could not start the workflow.");}
+notice.className="notice success show";notice.innerHTML="✓ "+data.message+"<br><br><a href=\""+data.actions_url+"\" target=\"_blank\" rel=\"noopener\">Open GitHub Actions →</a>";form.reset();document.getElementById("max_clips").value="5";document.getElementById("target_duration").value="45";type.dispatchEvent(new Event("change"));
+}catch(err){notice.className="notice error show";notice.textContent=err.message||"Could not submit the job. Check your connection and try again.";}
+finally{btn.disabled=false;btn.textContent="⚡ SEND TO CLIP FACTORY";}
+});
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));}
+</script></body></html>
