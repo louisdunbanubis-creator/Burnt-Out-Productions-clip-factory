@@ -119,6 +119,11 @@ ANALYSIS_FILE="$ROOT/work/analysis.json" OUTPUT_DIR="$ROOT/output" NICHE="$NICHE
 SOURCE_URL="local-file:$SOURCE_FILE" \
 .venv/bin/python scripts/vidiq_research.py
 
+echo "Running live vidIQ research if VIDIQ_MCP_API_KEY is configured..."
+VIDIQ_MCP_API_KEY="${VIDIQ_MCP_API_KEY:-}" \
+VIDIQ_QUEUE_JSON="$ROOT/output/vidiq-research-queue.json" \
+.venv/bin/python scripts/vidiq_mcp_research.py
+
 echo
 echo "Finished. Your files are in:"
 open "$ROOT/output" 2>/dev/null || true
