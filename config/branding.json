@@ -1,8 +1,8 @@
 {
-  "brand": "Burnt Out Productions",
+  "brand": "Burnt Out Productions Clip Factory",
   "credit_name": "Redthaproducer",
-  "display_font": "Anton",
+  "display_font": "Anton (Redthaproducer-inspired stand-in)",
   "font_license": "SIL Open Font License",
-  "purpose": "Use consistently for hooks, captions and other generated on-video text.",
-  "note": "Anton is the production substitute for the Redthaproducer closing-credit look; replace with the exact licensed font later if the original typeface is identified."
+  "purpose": "Use consistently for hooks, captions, and other generated on-video text.",
+  "note": "The exact Redthaproducer typeface has not been identified or supplied. Anton is the current open-license visual substitute; replace the font asset and renderer font family when the exact licensed typeface is available."
 }
