@@ -1,3 +1,5 @@
+import { HUB_HTML, HUB_SW } from "./hub-assets.js";
+
 const REPO = "louisdunbanubis-creator/Burnt-Out-Productions-clip-factory";
 const WORKFLOW = "render.yml";
 const MAX_VIDEO_BYTES = 1_800_000_000;
@@ -255,6 +257,12 @@ async function convertLink(request, env, pageUrl) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (request.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) {
+      return new Response(HUB_HTML, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
+    }
+    if (request.method === "GET" && url.pathname === "/sw.js") {
+      return new Response(HUB_SW, { headers: { "content-type": "application/javascript; charset=utf-8", "cache-control": "no-store" } });
+    }
     if (url.pathname.startsWith("/api/")) {
       if (!sameOrigin(request, url)) return json({ error: "Request origin rejected." }, 403);
 
