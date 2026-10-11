@@ -62,7 +62,7 @@ jobs:
           sudo fc-cache -f
           python3 -m venv .venv
           .venv/bin/pip install --upgrade pip
-          .venv/bin/pip install --no-cache-dir openai-whisper yt-dlp mcp
+          .venv/bin/pip install --no-cache-dir openai-whisper yt-dlp
 
       - name: Install free Piper voice engine when requested
         if: ${{ inputs.narration_mode == 'replace' || inputs.narration_mode == 'mix' }}
