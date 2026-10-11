@@ -45,3 +45,19 @@ The workflow uses GitHub Actions, Whisper, FFmpeg, and optional Piper TTS. GitHu
 ## Rights gate
 
 Only process footage you own, have permission/license to use, public-domain material, applicable Creative Commons material, or footage you are using in a lawful transformative/commentary workflow. A source being publicly viewable does not automatically grant reuse rights.
+
+
+## Process a video saved on your Mac (no URL needed)
+
+GitHub Actions runs on a separate cloud computer and cannot read files directly from your Mac. To process a local file without uploading it to a video site, use the local runner included in this repository.
+
+1. Install [Homebrew](https://brew.sh/) if you do not already have it.
+2. Open Terminal and install FFmpeg: `brew install ffmpeg`.
+3. Download this repository to your Mac (GitHub's **Code → Download ZIP** works), unzip it, and open Terminal in the unzipped project folder.
+4. Run: `bash scripts/run_local.sh`
+5. When asked for the video path, drag your video file from Finder into Terminal and press Return. Or pass the path directly: `bash scripts/run_local.sh "/full/path/to/video.mp4"`.
+6. Answer the prompts for niche, clip count, montage length, and narration mode. Results are saved in the project's `output/` folder.
+
+The first run installs Whisper in a local Python virtual environment and downloads the transcription model, so it can take a while and needs an internet connection. Video analysis/rendering then happens on your Mac; longer videos need more time and free disk space. The default narration mode preserves the original audio. Replace/mix modes install Piper and download its voice model. Optional Gemini script refinement works if you set `GEMINI_API_KEY` in your Terminal environment.
+
+Only process videos you own or have permission to reuse. The local runner does not upload your source video to GitHub; it downloads software/models as needed and writes finished files to `output/`.
