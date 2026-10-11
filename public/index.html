@@ -21,9 +21,10 @@ h2{font-size:19px;margin:0 0 14px}label{display:block;font-size:13px;color:#ddd;
     <div class="eyebrow">01 / Video source</div>
     <h2>What are we clipping?</h2>
     <label for="source_type">Source type</label>
-    <select id="source_type" name="source_type"><option value="youtube">YouTube link</option><option value="direct_mp4">Direct MP4 file URL</option></select>
+    <select id="source_type" name="source_type"><option value="direct_mp4">Upload an MP4 from my phone</option><option value="youtube">YouTube link</option></select>
+    <div id="fileArea" style="margin-top:12px;padding:12px;border:1px dashed #555;border-radius:12px"><label for="video_file">Choose MP4 video</label><input id="video_file" type="file" accept="video/mp4,.mp4" style="width:100%;padding:10px;background:#090909;color:white;border:1px solid #444;border-radius:10px"><p class="small">Upload directly from your iPhone. Up to 1.8 GB. Keep this page open while uploading.</p></div>
     <label for="source_url">Paste video link</label>
-    <input id="source_url" name="source_url" type="url" placeholder="https://…" autocomplete="url" required>
+    <input id="source_url" name="source_url" type="url" placeholder="https://…/video.mp4" autocomplete="url">
     <p class="small" id="sourceHelp">Paste the YouTube video URL. The workflow will attempt to fetch it.</p>
     <div class="check"><input id="rights_confirmed" name="rights_confirmed" type="checkbox" required><label for="rights_confirmed">I own this video, have permission or a license to use it, or otherwise have lawful rights to process and reuse this footage.</label></div>
   </section>
@@ -48,7 +49,7 @@ h2{font-size:19px;margin:0 0 14px}label{display:block;font-size:13px;color:#ddd;
     <input id="pin" name="pin" type="password" autocomplete="current-password" placeholder="Enter your private dashboard PIN" required>
     <p class="small">The PIN and GitHub token are handled by the server connection. Your GitHub token is never placed in this webpage.</p>
     <button id="submitBtn" class="button primary" type="submit">⚡ SEND TO CLIP FACTORY</button>
-    <div id="notice" class="notice" role="status" aria-live="polite"></div>
+    <progress id="progress" max="100" value="0" style="display:none;width:100%;margin-top:12px;accent-color:#e11"></progress><div id="notice" class="notice" role="status" aria-live="polite"></div>
   </section>
 </form>
 <section class="card">
@@ -57,18 +58,20 @@ h2{font-size:19px;margin:0 0 14px}label{display:block;font-size:13px;color:#ddd;
   <a class="button" href="https://github.com/louisdunbanubis-creator/Burnt-Out-Productions-clip-factory/actions" target="_blank" rel="noopener">VIEW JOBS / DOWNLOAD CLIPS</a>
   <a class="button" href="https://app.vidiq.com/" target="_blank" rel="noopener">OPEN vidIQ KEYWORD RESEARCH</a>
 </section>
-<div class="small footer">Only process videos you own or are authorized to use. Large direct MP4 files must be available from a downloadable HTTPS link; this form does not upload a file stored only on your phone.</div>
+<div class="small footer">Only process videos you own or are authorized to use. Choose an MP4 from your phone or paste a direct HTTPS MP4 URL. Video uploads use private Cloudflare storage.</div>
 </main>
 <script>
-const form=document.getElementById("runForm"),type=document.getElementById("source_type"),help=document.getElementById("sourceHelp"),btn=document.getElementById("submitBtn"),notice=document.getElementById("notice");
-type.addEventListener("change",()=>{help.textContent=type.value==="direct_mp4"?"Paste a direct HTTPS link to the MP4 file itself, not a webpage that has a Download button.":"Paste the YouTube video URL. The workflow will attempt to fetch it.";document.getElementById("source_url").placeholder=type.value==="direct_mp4"?"https://example.com/video.mp4":"https://www.youtube.com/watch?v=…";});
-form.addEventListener("submit",async e=>{e.preventDefault();notice.className="notice";notice.textContent="";if(!form.reportValidity())return;
-const payload={source_type:type.value,source_url:document.getElementById("source_url").value.trim(),rights_confirmed:document.getElementById("rights_confirmed").checked,niche:document.getElementById("niche").value,max_clips:Number(document.getElementById("max_clips").value),target_duration:Number(document.getElementById("target_duration").value),hook:document.getElementById("hook").value.trim(),narration_mode:document.getElementById("narration_mode").value,pin:document.getElementById("pin").value};
-btn.disabled=true;btn.textContent="SENDING TO GITHUB…";
-try{const res=await fetch("/api/run",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});const data=await res.json().catch(()=>({error:"Unexpected response from dashboard server."}));if(!res.ok||!data.ok){throw new Error(data.error||"GitHub could not start the workflow.");}
-notice.className="notice success show";notice.innerHTML="✓ "+data.message+"<br><br><a href=\""+data.actions_url+"\" target=\"_blank\" rel=\"noopener\">Open GitHub Actions →</a>";form.reset();document.getElementById("max_clips").value="5";document.getElementById("target_duration").value="45";type.dispatchEvent(new Event("change"));
-}catch(err){notice.className="notice error show";notice.textContent=err.message||"Could not submit the job. Check your connection and try again.";}
-finally{btn.disabled=false;btn.textContent="⚡ SEND TO CLIP FACTORY";}
-});
+const form=document.getElementById("runForm"),type=document.getElementById("source_type"),fileInput=document.getElementById("video_file"),sourceInput=document.getElementById("source_url"),help=document.getElementById("sourceHelp"),btn=document.getElementById("submitBtn"),notice=document.getElementById("notice"),progress=document.getElementById("progress");
+let uploadedKey="",uploadedUrl="";
+function say(message,kind=""){notice.className="notice show "+kind;notice.textContent=message;}
+function updateMode(){const youtube=type.value==="youtube";document.getElementById("fileArea").style.display=youtube?"none":"block";sourceInput.placeholder=youtube?"https://www.youtube.com/watch?v=…":"https://example.com/video.mp4";sourceInput.required=youtube||!fileInput.files.length;help.textContent=youtube?"Paste the YouTube link. YouTube may still block some downloads.":"Choose an MP4 above, or paste a direct HTTPS link to the MP4 file itself.";}
+type.addEventListener("change",updateMode);
+fileInput.addEventListener("change",()=>{uploadedKey="";uploadedUrl="";if(fileInput.files[0]){const f=fileInput.files[0];if(f.size>1800000000){fileInput.value="";say("That video is over the 1.8 GB limit. Choose a smaller MP4.","error");}else if(!/\.mp4$/i.test(f.name)&&f.type!=="video/mp4"){fileInput.value="";say("Please choose an MP4 video file.","error");}else{sourceInput.value="";say("Ready to upload "+f.name+" ("+(f.size/1048576).toFixed(1)+" MB).","success");}}updateMode();});
+async function uploadVideo(file,pin){const chunkSize=8*1024*1024,total=Math.ceil(file.size/chunkSize),id=crypto.randomUUID(),token=Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,"0")).join("");progress.style.display="block";progress.value=0;say("Preparing secure upload…");
+for(let part=0;part<total;part++){const start=part*chunkSize,end=Math.min(file.size,start+chunkSize);let res;try{res=await fetch("/api/upload/chunk?id="+encodeURIComponent(id)+"&part="+part+"&total="+total,{method:"PUT",headers:{"x-dashboard-pin":pin,"Content-Type":"application/octet-stream"},body:file.slice(start,end)});}catch(e){throw new Error("Upload connection interrupted at chunk "+(part+1)+". Keep the page open and try again.");}const d=await res.json().catch(()=>({error:"Unexpected upload response."}));if(!res.ok||!d.ok)throw new Error(d.error||"Upload failed at chunk "+(part+1)+".");progress.value=Math.round((part+1)/total*92);say("Uploading video… "+Math.round((part+1)/total*100)+"% ("+(end/1048576).toFixed(0)+" / "+(file.size/1048576).toFixed(0)+" MB)");}
+say("Finishing secure video upload…");const res=await fetch("/api/upload/finish",{method:"POST",headers:{"Content-Type":"application/json","x-dashboard-pin":pin},body:JSON.stringify({id,token,total,size:file.size,filename:file.name})});const d=await res.json().catch(()=>({error:"Could not finish the upload."}));if(!res.ok||!d.ok)throw new Error(d.error||"Could not finish the upload.");progress.value=100;uploadedKey=file.name+":"+file.size;uploadedUrl=d.source_url;sourceInput.value=d.source_url;return d.source_url;}
+form.addEventListener("submit",async e=>{e.preventDefault();notice.className="notice";notice.textContent="";updateMode();if(!form.reportValidity())return;const pin=document.getElementById("pin").value.trim(),file=fileInput.files[0];btn.disabled=true;btn.textContent="WORKING…";
+try{let source=sourceInput.value.trim();if(type.value==="direct_mp4"&&file){const key=file.name+":"+file.size;source=uploadedKey===key&&uploadedUrl?uploadedUrl:await uploadVideo(file,pin);}if(!source)throw new Error("Choose an MP4 file or paste a video URL.");say("Sending your job to GitHub Actions…");const payload={source_type:type.value,source_url:source,rights_confirmed:document.getElementById("rights_confirmed").checked,niche:document.getElementById("niche").value,max_clips:Number(document.getElementById("max_clips").value),target_duration:Number(document.getElementById("target_duration").value),hook:document.getElementById("hook").value.trim(),narration_mode:document.getElementById("narration_mode").value};const res=await fetch("/api/run",{method:"POST",headers:{"Content-Type":"application/json","x-dashboard-pin":pin},body:JSON.stringify(payload)});const d=await res.json().catch(()=>({error:"Unexpected dashboard response."}));if(!res.ok||!d.ok)throw new Error(d.error||"GitHub could not start the workflow.");notice.className="notice success show";notice.innerHTML="✓ "+d.message+"<br><br><a href=\""+d.actions_url+"\" target=\"_blank\" rel=\"noopener\">Open job tracker →</a>";progress.value=100;fileInput.value="";sourceInput.value="";uploadedKey="";uploadedUrl="";document.getElementById("rights_confirmed").checked=false;updateMode();}catch(err){say(err.message||"Something went wrong. Check the connection and try again.","error");}finally{btn.disabled=false;btn.textContent="⚡ SEND TO CLIP FACTORY";}});
+updateMode();
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));}
 </script></body></html>
