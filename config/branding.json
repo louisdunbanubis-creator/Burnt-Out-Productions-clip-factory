@@ -1,8 +1,14 @@
 {
   "brand": "Burnt Out Productions Clip Factory",
   "credit_name": "Redthaproducer",
-  "display_font": "Anton (Redthaproducer-inspired stand-in)",
+  "display_font": "Redtha Producer",
+  "font_file": "public/fonts/RedthaProducer-Regular.ttf",
   "font_license": "SIL Open Font License",
-  "purpose": "Use consistently for hooks, captions, and other generated on-video text.",
-  "note": "The exact Redthaproducer typeface has not been identified or supplied. Anton is the current open-license visual substitute; replace the font asset and renderer font family when the exact licensed typeface is available."
+  "colors": {
+    "burgundy": "#A12D45",
+    "burgundy_bright": "#C45A72",
+    "burgundy_deep": "#4C1222"
+  },
+  "purpose": "Use consistently for hooks, captions, titles, and other generated on-video text.",
+  "note": "Redtha Producer is the app name for a renamed SIL OFL build of Rubik Wet Paint (Hubert and Fischer, NaN). The picture supplied the brush style and the burgundy color; it is not a complete font file. Keep OFL.txt with the font."
 }

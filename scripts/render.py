@@ -6,7 +6,7 @@ OUTPUT = os.environ.get("OUTPUT_FILE", "output/best_moments.mp4")
 NICHE = os.environ.get("NICHE", "interesting")
 HOOK_OVERRIDE = os.environ.get("HOOK", "").strip()
 NARRATION_MODE = os.environ.get("NARRATION_MODE", "original")
-FONT = os.environ.get("FONT_FILE", "/usr/share/fonts/truetype/anton/Anton-Regular.ttf")
+FONT = os.environ.get("FONT_FILE", str(Path(__file__).resolve().parents[1] / "public/fonts/RedthaProducer-Regular.ttf"))
 ANALYSIS = json.load(open(os.environ.get("ANALYSIS_FILE", "work/analysis.json"), encoding="utf-8"))
 TRANSCRIPT = json.load(open(os.environ.get("TRANSCRIPT_JSON", "work/transcript.json"), encoding="utf-8"))
 VOICE_MODEL = os.environ.get("PIPER_MODEL", "work/en_US-lessac-medium.onnx")
@@ -28,7 +28,7 @@ def ass_time(sec):
 def write_ass(path, start, end):
     rows=["[Script Info]","ScriptType: v4.00+","PlayResX: 1080","PlayResY: 1920",
           "[V4+ Styles]","Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Alignment,MarginL,MarginR,MarginV,BorderStyle,Outline,Shadow",
-          "Style: Brand,Anton,62,&H00FFFFFF,&H00FFFFFF,&H00000000,&H88000000,0,0,2,70,70,190,1,4,0",
+          "Style: Brand,Redtha Producer,68,&H00725AC4,&H00725AC4,&H0022124C,&H88000000,0,0,2,70,70,190,1,3,0",
           "[Events]","Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text"]
     for seg in TRANSCRIPT.get("segments", []):
         a=float(seg.get("start",0)); b=float(seg.get("end",0))
@@ -56,7 +56,7 @@ for idx, moment in enumerate(ANALYSIS.get("moments", []), 1):
     vf=f"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,subtitles={ass}"
     if hook:
         safe=hook.replace("\\","\\\\").replace(":","\\:").replace("'","\\'").replace("%","\\%").replace(",","\\,")
-        vf += f",drawtext=fontfile={FONT}:text='{safe}':x=(w-text_w)/2:y=110:fontsize=72:fontcolor=white:borderw=5:bordercolor=black:box=1:boxcolor=black@0.35:boxborderw=18"
+        vf += f",drawtext=fontfile={FONT}:text='{safe}':x=(w-text_w)/2:y=110:fontsize=78:fontcolor=0xC45A72:borderw=4:bordercolor=0x4C1222"
     base=["ffmpeg","-y","-ss",str(start),"-i",SOURCE]
     if NARRATION_MODE in ("replace","mix"):
         voice=make_voiceover(moment,idx)
@@ -83,7 +83,7 @@ Path("output/scripts.txt").write_text("\n\n".join(
     for i,m in enumerate(ANALYSIS.get("moments",[]),1)),encoding="utf-8")
 Path("output/metadata.json").write_text(json.dumps({
  "source":os.environ.get("SOURCE_URL",""),"rights_confirmed":os.environ.get("RIGHTS_CONFIRMED",""),
- "niche":NICHE,"mode":"full-video-auto-analysis","font":"Anton (open-license stand-in)",
+ "niche":NICHE,"mode":"full-video-auto-analysis","font":"Redtha Producer",
  "script_mode":ANALYSIS.get("script_mode","free transcript-based fallback"),
  "narration_mode":NARRATION_MODE,"individual_clips":clips,"montage":OUTPUT,
  "moments":ANALYSIS.get("moments",[])

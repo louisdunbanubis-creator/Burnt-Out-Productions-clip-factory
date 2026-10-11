@@ -110,7 +110,7 @@ To enable Gemini refinement, create a Gemini API key using its available free ti
 - vidIQ keyword candidates are generated automatically, but actual search-volume/competition verification remains a vidIQ research step; publishing is not automated from these metrics.
 - Music is not automatically added yet. Use only music you own or are licensed to use.
 - The default mode keeps original audio and does not generate voiceover. Choose replace or mix when you want Piper narration.
-- Anton is the current open-license condensed display font substitute; it is not the exact RedthaProducer typeface.
+- On-video hooks and captions use Redtha Producer, the burgundy brush face in `public/fonts/`.
 
 ## Free-first architecture
 
