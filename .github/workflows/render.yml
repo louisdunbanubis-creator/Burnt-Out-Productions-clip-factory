@@ -63,8 +63,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg fonts-dejavu python3-venv
-          sudo mkdir -p /usr/share/fonts/truetype/anton
-          sudo curl -L --fail --retry 3 -o /usr/share/fonts/truetype/anton/Anton-Regular.ttf https://raw.githubusercontent.com/google/fonts/main/ofl/anton/Anton-Regular.ttf
+          sudo mkdir -p /usr/share/fonts/truetype/redthaproducer
+          sudo cp public/fonts/RedthaProducer-Regular.ttf /usr/share/fonts/truetype/redthaproducer/RedthaProducer-Regular.ttf
           sudo fc-cache -f
           python3 -m venv .venv
           .venv/bin/pip install --upgrade pip
@@ -83,13 +83,23 @@ jobs:
           curl -L --fail --retry 3 -o work/en_US-lessac-medium.onnx https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx
           curl -L --fail --retry 3 -o work/en_US-lessac-medium.onnx.json https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json
 
-      - name: Download authorized source
+      - name: Prepare normalized MP4 source
+        id: media
         env:
           SOURCE_URL: ${{ inputs.source_url }}
           SOURCE_TYPE: ${{ inputs.source_type }}
+          YOUTUBE_COOKIES_B64: ${{ secrets.YOUTUBE_COOKIES_B64 }}
         run: |
           set -euo pipefail
           mkdir -p work
+          rm -f work/source.mp4 work/download.*
+          cookie_args=()
+          if [ -n "$YOUTUBE_COOKIES_B64" ]; then
+            printf '%s' "$YOUTUBE_COOKIES_B64" | base64 --decode > work/youtube-cookies.txt
+            chmod 600 work/youtube-cookies.txt
+            cookie_args=(--cookies work/youtube-cookies.txt)
+            trap 'rm -f work/youtube-cookies.txt' EXIT
+          fi
           case "$SOURCE_TYPE" in
             direct_mp4)
               python3 - <<'PY'
@@ -99,28 +109,52 @@ jobs:
               print("Direct MP4 source must be an HTTPS URL.", file=sys.stderr)
               sys.exit(1)
           PY
-              curl --location --fail --show-error --retry 3 --max-time 1800 --max-filesize 1800000000 "$SOURCE_URL" -o work/source.mp4
-              if ! ffprobe -v error -select_streams v:0 -show_entries stream=codec_type -of csv=p=0 work/source.mp4 | grep -q video; then
-                echo "::error::The supplied URL did not return a readable video file."
-                exit 1
-              fi
+              curl --location --fail --show-error --retry 3 --retry-all-errors --max-time 1800 --max-filesize 1800000000 "$SOURCE_URL" -o work/download.mp4
               ;;
             youtube)
-              .venv/bin/yt-dlp --js-runtimes deno --force-ipv4 --extractor-args "youtube:player_client=tv,web_safari" --no-playlist --restrict-filenames -f "bv*+ba/b" --merge-output-format mp4 -o "work/source.%(ext)s" "$SOURCE_URL"
+              if ! .venv/bin/yt-dlp \
+                --js-runtimes deno \
+                --force-ipv4 \
+                --no-playlist \
+                --restrict-filenames \
+                --retries 3 \
+                --fragment-retries 3 \
+                "${cookie_args[@]}" \
+                -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b" \
+                --merge-output-format mp4 \
+                -o "work/download.%(ext)s" \
+                "$SOURCE_URL"; then
+                echo "::error::YouTube blocked this GitHub runner before MP4 preparation. Upload an MP4 in the Clip Factory hub, or configure the YOUTUBE_COOKIES_B64 repository secret with an authorized Netscape cookies file."
+                exit 1
+              fi
               ;;
             *)
               echo "::error::Unsupported source type."
               exit 1
               ;;
           esac
-
-      - name: Locate source and measure full video
-        id: media
-        run: |
-          FILE="$(find work -maxdepth 1 -type f \( -name 'source.*' \) | head -n 1)"
-          test -n "$FILE"
-          DUR="$(ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$FILE")"
-          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          INPUT="$(find work -maxdepth 1 -type f -name 'download.*' -print -quit)"
+          if [ -z "$INPUT" ] || ! ffprobe -v error -select_streams v:0 -show_entries stream=codec_type -of csv=p=0 "$INPUT" | grep -qx video; then
+            echo "::error::Source preparation did not produce a readable video stream."
+            exit 1
+          fi
+          if ! ffmpeg -y -v error -i "$INPUT" -map 0:v:0 -map 0:a:0? -c copy -movflags +faststart -f mp4 work/source.mp4; then
+            echo "::notice::Source codecs require MP4-compatible transcoding."
+            ffmpeg -y -v error -i "$INPUT" -map 0:v:0 -map 0:a:0? \
+              -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p \
+              -c:a aac -b:a 192k -movflags +faststart work/source.mp4
+          fi
+          DUR="$(ffprobe -v error -select_streams v:0 -show_entries format=duration -of default=nw=1:nk=1 work/source.mp4)"
+          python3 - "$DUR" <<'PY'
+          import math, sys
+          try:
+              duration = float(sys.argv[1])
+          except ValueError:
+              raise SystemExit("Normalized MP4 has no readable duration.")
+          if not math.isfinite(duration) or duration <= 0:
+              raise SystemExit("Normalized MP4 has an invalid duration.")
+          PY
+          echo "file=work/source.mp4" >> "$GITHUB_OUTPUT"
           echo "duration=$DUR" >> "$GITHUB_OUTPUT"
 
       - name: Extract full-video audio
