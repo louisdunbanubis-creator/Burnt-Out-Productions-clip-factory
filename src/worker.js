@@ -1,3 +1,4 @@
+import { services, savedVideo, monitor } from './app-services.js';
 import { HUB_HTML, HUB_SW } from "./hub-assets.js";
 
 const REPO = "louisdunbanubis-creator/Burnt-Out-Productions-clip-factory";
@@ -255,6 +256,7 @@ async function convertLink(request, env, pageUrl) {
 }
 
 export default {
+  async scheduled(event, env, ctx) { ctx.waitUntil(monitor(env)); },
   async fetch(request, env) {
     const url = new URL(request.url);
     if (request.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) {
@@ -263,9 +265,18 @@ export default {
     if (request.method === "GET" && url.pathname === "/sw.js") {
       return new Response(HUB_SW, { headers: { "content-type": "application/javascript; charset=utf-8", "cache-control": "no-store" } });
     }
+    if (['/manifest.json','/app-icon-192.png','/app-icon-512.png','/apple-touch-icon.png'].includes(url.pathname)) {
+      const asset = await fetch('https://raw.githubusercontent.com/louisdunbanubis-creator/Burnt-Out-Productions-clip-factory/main/public'+url.pathname);
+      return new Response(asset.body,{status:asset.status,headers:{'content-type':url.pathname.endsWith('.json')?'application/manifest+json':'image/png','cache-control':'public, max-age=300'}});
+    }
+    if (url.pathname.startsWith('/api/saved/') && ['GET','HEAD'].includes(request.method)) return savedVideo(request, env, url);
     if (url.pathname.startsWith("/api/")) {
       if (!sameOrigin(request, url)) return json({ error: "Request origin rejected." }, 403);
 
+      if (url.pathname === '/api/library' || url.pathname === '/api/jobs' || url.pathname.startsWith('/api/push/')) {
+        if (!checkPin(request, env)) return json({error:'Enter your dashboard PIN to unlock this feature.'},401);
+        try { return await services(request,env,url); } catch(e) { console.error('App service',e.message);return json({error:'Could not complete this request. Please try again.'},500); }
+      }
       if (url.pathname === "/api/run") {
         if (request.method !== "POST") return json({ error: "Use POST." }, 405);
         if (!env.GITHUB_TOKEN || !env.DASHBOARD_PIN) return json({ error: "The dashboard connection needs GITHUB_TOKEN and DASHBOARD_PIN Worker secrets." }, 503);

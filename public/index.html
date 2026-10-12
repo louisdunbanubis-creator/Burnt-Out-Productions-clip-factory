@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Burnt Out Productions">
 <link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <title>Burnt Out Productions — Clip Factory</title>
 <style>
 @font-face{font-family:"Redtha Producer";src:url("fonts/RedthaProducer-Regular.ttf") format("truetype");font-display:swap}
@@ -52,6 +52,7 @@ body{background:radial-gradient(ellipse at 85% 0%,rgba(170,15,35,.17),transparen
 .button{border-color:#58222c}.button.primary{background:#781626;border-color:#c43248}.button:hover{border-color:#dc4056}.button.primary:hover{background:#911e31}
 .pill input:focus,.pill select:focus{outline-color:#d53850}.check input,progress{accent-color:#d53850}
 .card-title{color:#e7b2bc}.sub{color:#bfa1a6}
+.saved-video{border-top:1px solid #58222c;margin-top:18px;padding-top:12px}.saved-video h3{overflow-wrap:anywhere}.saved-video p,#recentJobs{font-size:13px;color:#bfa1a6}#recentJobs a{color:#e7b2bc}
 </style>
 </head>
 <body>
@@ -119,6 +120,24 @@ body{background:radial-gradient(ellipse at 85% 0%,rgba(170,15,35,.17),transparen
   <h2 class="card-title">Rights-first</h2>
   <p class="small">The machine will stop unless you confirm you own, licensed, have permission for, or otherwise lawfully may reuse the source. Public availability alone is not treated as permission.</p>
 </section>
+<section class="card" id="appSetup">
+<h2 class="card-title">Your Clip Factory app</h2>
+<p id="installHelp" class="small">On iPhone: open this page in Safari, tap Share, then Add to Home Screen. Open the new icon to enable notifications.</p>
+<button type="button" class="button" id="installApp" hidden>Add to Home Screen</button>
+<button type="button" class="button primary" id="enablePush">Enable job notifications</button>
+<button type="button" class="button" id="testPush" hidden>Send a test notification</button>
+<button type="button" class="button" id="disablePush" hidden>Turn notifications off</button>
+<p id="pushStatus" class="small" role="status" aria-live="polite">Enter your dashboard PIN above. Notifications alert you when a job finishes, even with the app closed.</p>
+</section>
+<section class="card" id="library">
+<h2 class="card-title">Saved videos</h2>
+<button type="button" class="button" id="loadLibrary">Unlock my videos</button>
+<p id="libraryStatus" class="small" role="status" aria-live="polite">Your videos stay private. Enter your dashboard PIN above to view uploads and finished clips.</p>
+<div id="savedVideos"></div>
+<h2 class="card-title" style="margin-top:24px">Recent clip jobs</h2>
+<div id="recentJobs"></div>
+</section>
+
 </main>
 <script>
 const form=document.getElementById("runForm"),type=document.getElementById("source_type"),fileInput=document.getElementById("video_file"),sourceInput=document.getElementById("source_url"),btn=document.getElementById("submitBtn"),notice=document.getElementById("notice"),progress=document.getElementById("progress"),fileArea=document.getElementById("fileArea");
@@ -136,6 +155,26 @@ form.addEventListener("submit",async e=>{e.preventDefault();notice.className="no
 try{let source=sourceInput.value.trim();if(type.value==="direct_mp4"&&file){const key=file.name+":"+file.size;source=uploadedKey===key&&uploadedUrl?uploadedUrl:await uploadVideo(file,pin);}if(!source)throw new Error("Paste a video link or choose an MP4.");say("Sending this job to GitHub…");const payload={source_type:type.value,source_url:source,rights_confirmed:document.getElementById("rights_confirmed").checked,niche:document.getElementById("niche").value,max_clips:Number(document.getElementById("max_clips").value),target_duration:Number(document.getElementById("target_duration").value),hook:document.getElementById("hook").value.trim(),narration_mode:document.getElementById("narration_mode").value};const res=await fetch("/api/run",{method:"POST",headers:{"Content-Type":"application/json","x-dashboard-pin":pin},body:JSON.stringify(payload)});const d=await res.json().catch(()=>({error:"Unexpected dashboard response."}));if(!res.ok||!d.ok)throw new Error(d.error||"GitHub could not start the workflow.");notice.className="notice success show";notice.innerHTML="GitHub accepted the job.<br><br><a href=\""+d.actions_url+"\" target=\"_blank\" rel=\"noopener\">Open the job →</a>";progress.value=100;fileInput.value="";sourceInput.value="";uploadedKey="";uploadedUrl="";document.getElementById("rights_confirmed").checked=false;updateMode();}catch(err){say(err.message||"Something went wrong. Check the connection and try again.","error");}finally{btn.disabled=false;btn.textContent="Send to GitHub";}});
 updateMode();
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));}
+const pinValue=()=>document.getElementById('pin').value.trim();
+const pushStatus=document.getElementById('pushStatus'),libraryStatus=document.getElementById('libraryStatus');
+async function appApi(path,body){if(!pinValue())throw Error('Enter your dashboard PIN above first.');const r=await fetch(path,{method:body?'POST':'GET',headers:{'x-dashboard-pin':pinValue(),...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const d=await r.json();if(!r.ok)throw Error(d.error||'Please try again.');return d;}
+const installed=()=>window.matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+const ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
+let installPrompt;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;document.getElementById('installApp').hidden=false;});
+document.getElementById('installApp').onclick=async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;}};
+if(installed())document.getElementById('installHelp').textContent='Installed on your Home Screen. Enable notifications below to get clip-job updates.';
+function bytes(v){const raw=atob(v.replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(raw,c=>c.charCodeAt(0));}
+async function pushRegistration(){if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw Error('On iPhone, add this page to your Home Screen, open that icon, then enable notifications. Requires iOS 16.4 or newer.');return navigator.serviceWorker.ready;}
+function pushButtons(enabled){document.getElementById('enablePush').hidden=enabled;document.getElementById('disablePush').hidden=!enabled;document.getElementById('testPush').hidden=!enabled;}
+document.getElementById('enablePush').onclick=async()=>{try{if(ios&&!installed())throw Error('In Safari, tap Share → Add to Home Screen. Open the new Clip Factory icon, enter your PIN, then tap Enable job notifications.');if(!pinValue())throw Error('Enter your dashboard PIN above first.');if(!('Notification'in window))throw Error('Notifications are not supported in this browser.');const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('Notifications were not allowed. You can allow them in your iPhone notification settings.');const reg=await pushRegistration();const {key}=await appApi('/api/push/key');let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bytes(key)});await appApi('/api/push/subscribe',sub.toJSON());pushButtons(true);pushStatus.textContent='Job notifications are enabled. You can send a test notification below.';}catch(e){pushStatus.textContent=e.message;}};
+document.getElementById('testPush').onclick=async()=>{try{const reg=await pushRegistration(),sub=await reg.pushManager.getSubscription();if(!sub)throw Error('Enable notifications first.');await appApi('/api/push/test',{endpoint:sub.endpoint});pushStatus.textContent='Test notification accepted by the notification service. Check your iPhone.';}catch(e){pushStatus.textContent=e.message;}};
+document.getElementById('disablePush').onclick=async()=>{try{const reg=await pushRegistration(),sub=await reg.pushManager.getSubscription();if(sub){await appApi('/api/push/unsubscribe',{endpoint:sub.endpoint});await sub.unsubscribe();}pushButtons(false);pushStatus.textContent='Notifications are off for this device.';}catch(e){pushStatus.textContent=e.message;}};
+function node(tag,text){const n=document.createElement(tag);if(text)n.textContent=text;return n;}
+async function loadLibrary(){const target=document.getElementById('savedVideos'),jobs=document.getElementById('recentJobs');target.replaceChildren();jobs.replaceChildren();libraryStatus.textContent='Loading your private library…';try{const {videos}=await appApi('/api/library');libraryStatus.textContent=videos.length?`${videos.length} saved video${videos.length===1?'':'s'}. Source uploads may expire after 7 days if storage cleanup is enabled. Finished clips are kept in your library.`:'No saved videos yet. Upload an MP4 above; finished clips appear after a successful clip job.';for(const v of videos){const article=node('article');article.className='saved-video';article.append(node('h3',v.name),node('p',`${v.kind} · ${(v.size/1048576).toFixed(1)} MB · ${new Date(v.date).toLocaleDateString()}`));const player=node('video');player.controls=true;player.playsInline=true;player.preload='none';player.src=v.url;player.style.width='100%';article.append(player);const a=node('a','Open / save video');a.href=v.url;a.target='_blank';a.rel='noopener';a.className='button';article.append(a);target.append(article);}const data=await appApi('/api/jobs');for(const run of data.runs){const p=node('p');const a=node('a',`${run.result||run.status} · ${new Date(run.date).toLocaleString()}${run.saved?' · videos saved':''}`);a.href=run.url;a.target='_blank';a.rel='noopener';p.append(a);jobs.append(p);}}catch(e){libraryStatus.textContent=e.message;}}
+document.getElementById('loadLibrary').onclick=loadLibrary;
+if('serviceWorker'in navigator){navigator.serviceWorker.ready.then(async reg=>{const sub=await reg.pushManager?.getSubscription();if(sub){pushButtons(true);pushStatus.textContent='This device has notifications enabled. Enter your PIN to manage them.';}}).catch(()=>{});navigator.serviceWorker.addEventListener('message',e=>{if(e.data?.type==='job-update'&&pinValue())loadLibrary();});}
+
 </script>
 </body>
 </html>

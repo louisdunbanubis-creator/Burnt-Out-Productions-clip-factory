@@ -1,32 +1,6 @@
-const CACHE = "clip-factory-shell-v5";
-self.addEventListener("install", (event) => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE);
-    const fresh = await fetch("/", { cache: "reload" });
-    await cache.put("/", fresh);
-    await self.skipWaiting();
-  })());
-});
-self.addEventListener("activate", (event) => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)));
-    await self.clients.claim();
-  })());
-});
-self.addEventListener("fetch", (event) => {
-  const url = new URL(event.request.url);
-  if (event.request.method !== "GET" || url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
-  event.respondWith((async () => {
-    try {
-      const response = await fetch(event.request);
-      if (response.ok) {
-        const copy = response.clone();
-        caches.open(CACHE).then((cache) => cache.put(event.request, copy));
-      }
-      return response;
-    } catch {
-      return (await caches.match(event.request)) || caches.match("/");
-    }
-  })());
-});
+const CACHE='clip-factory-app-v8';
+self.addEventListener('install',e=>{e.waitUntil((async()=>{await self.skipWaiting();})());});
+self.addEventListener('activate',e=>{e.waitUntil((async()=>{for(const k of await caches.keys())if(k.startsWith('clip-factory-')&&k!==CACHE)await caches.delete(k);await self.clients.claim();})());});
+self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==self.location.origin||u.pathname.startsWith('/api/'))return;e.respondWith((async()=>{const c=await caches.open(CACHE);try{const r=await fetch(e.request);if(r.ok)await c.put(e.request,r.clone());return r;}catch{return await c.match(e.request)||new Response('You are offline. Reconnect to use Clip Factory.',{status:503,headers:{'content-type':'text/plain'}});}})());});
+self.addEventListener('push',e=>{e.waitUntil((async()=>{await self.registration.showNotification('Clip Factory update',{body:'A clip job has finished or your test alert is ready. Open your dashboard to see the result and saved videos.',icon:'/app-icon-192.png',badge:'/app-icon-192.png',tag:'clip-factory-job',data:{url:'/#library'}});for(const c of await self.clients.matchAll({type:'window'}))c.postMessage({type:'job-update'});})());});
+self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil((async()=>{for(const c of await self.clients.matchAll({type:'window',includeUncontrolled:true})){if(new URL(c.url).origin===self.location.origin){await c.navigate('/#library');return c.focus();}}return self.clients.openWindow('/#library');})());});

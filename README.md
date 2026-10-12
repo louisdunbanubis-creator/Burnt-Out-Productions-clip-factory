@@ -134,3 +134,15 @@ GitHub Actions runs on a separate cloud computer and cannot read files directly 
 The first run installs Whisper in a local Python virtual environment and downloads the transcription model, so it can take a while and needs an internet connection. Video analysis/rendering then happens on your Mac; longer videos need more time and free disk space. The default narration mode preserves the original audio. Replace/mix modes install Piper and download its voice model. Optional Gemini script refinement works if you set `GEMINI_API_KEY` in your Terminal environment.
 
 Only process videos you own or have permission to reuse. The local runner does not upload your source video to GitHub; it downloads software/models as needed and writes finished files to `output/`.
+
+## Installed app, saved-video library, and job alerts
+
+In iPhone Safari, use Share → Add to Home Screen, then open the Clip Factory icon. Enter the dashboard PIN and tap Enable job notifications. iOS 16.4 or later is required; notification permission must be granted on the phone. The dashboard includes a test notification and a device-specific off switch.
+
+Saved videos are PIN-protected in the library. The private R2 bucket holds source uploads under `videos/` and finished clips under `clips/`. Playback supports byte ranges. Existing lifecycle rules can still remove source uploads; finished clips remain unless separate cleanup rules are configured.
+
+The Worker checks the repository's `render.yml` jobs every five minutes. Successful, unexpired GitHub artifacts are copied into the private clip library in batches of up to three MP4s per check, without loading the whole archive in memory. Large jobs can take several checks to fully save. Old expired artifacts cannot be recovered automatically. Notifications report job completion, including failure, and link to the dashboard for details. Only jobs created after a device subscribes trigger its notifications.
+
+Worker secrets: `DASHBOARD_PIN`, `GITHUB_TOKEN` (repository Actions read/write), `VAPID_PUBLIC_KEY`, and `VAPID_PRIVATE_JWK`. Keep the signing key and GitHub token private; do not commit them. The R2 binding is `VIDEO_BUCKET`. The public push key is delivered only after PIN authorization.
+
+Validation: `npm test` covers PIN protection, push endpoint validation, private library listing, token-protected video byte ranges, ZIP streaming import, VAPID signature verification, and notification deduplication. Real iPhone installation, permission, and delivery require the user's device.
