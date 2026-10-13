@@ -1,4 +1,4 @@
-const CACHE='clip-factory-app-v8';
+const CACHE='clip-factory-app-v9';
 self.addEventListener('install',e=>{e.waitUntil((async()=>{await self.skipWaiting();})());});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{for(const k of await caches.keys())if(k.startsWith('clip-factory-')&&k!==CACHE)await caches.delete(k);await self.clients.claim();})());});
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==self.location.origin||u.pathname.startsWith('/api/'))return;e.respondWith((async()=>{const c=await caches.open(CACHE);try{const r=await fetch(e.request);if(r.ok)await c.put(e.request,r.clone());return r;}catch{return await c.match(e.request)||new Response('You are offline. Reconnect to use Clip Factory.',{status:503,headers:{'content-type':'text/plain'}});}})());});

@@ -1,4 +1,5 @@
 import { services, savedVideo, monitor } from './app-services.js';
+import { LOGO_BASE64 } from "./logo-asset.js";
 import { HUB_HTML, HUB_SW } from "./hub-assets.js";
 
 const REPO = "louisdunbanubis-creator/Burnt-Out-Productions-clip-factory";
@@ -259,6 +260,10 @@ export default {
   async scheduled(event, env, ctx) { ctx.waitUntil(monitor(env)); },
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (request.method === "GET" && url.pathname === "/api/brand-logo.png") {
+      const bytes = Uint8Array.from(atob(LOGO_BASE64), c => c.charCodeAt(0));
+      return new Response(bytes, { headers: { "content-type": "image/png", "cache-control": "public, max-age=3600" } });
+    }
     if (request.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) {
       return new Response(HUB_HTML, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     }
