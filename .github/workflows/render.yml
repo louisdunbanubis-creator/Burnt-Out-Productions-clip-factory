@@ -187,11 +187,11 @@ jobs:
           HOOK: ${{ inputs.hook }}
           NARRATION_MODE: ${{ inputs.narration_mode }}
           PIPER_MODEL: work/en_US-lessac-medium.onnx
-          PATH: .venv/bin:$PATH
           ANALYSIS_FILE: work/analysis.json
           TRANSCRIPT_JSON: work/audio.json
           OUTPUT_FILE: output/best_moments_${{ inputs.niche }}.mp4
         run: |
+          export PATH="$PWD/.venv/bin:$PATH"
           python3 scripts/render.py
 
       - name: Prepare per-clip vidIQ keyword research queue

@@ -53,7 +53,7 @@ for idx, moment in enumerate(ANALYSIS.get("moments", []), 1):
     write_ass(ass,start,end)
     out=f"output/clip_{idx:02d}_{NICHE}.mp4"
     hook=HOOK_OVERRIDE or moment.get("hook","")
-    vf=f"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,subtitles={ass}"
+    vf=f"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,subtitles=filename='{ass}'"
     if hook:
         safe=hook.replace("\\","\\\\").replace(":","\\:").replace("'","\\'").replace("%","\\%").replace(",","\\,")
         vf += f",drawtext=fontfile={FONT}:text='{safe}':x=(w-text_w)/2:y=110:fontsize=78:fontcolor=0xC45A72:borderw=4:bordercolor=0x4C1222"
